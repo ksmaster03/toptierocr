@@ -1,0 +1,27 @@
+# Toptier AI OCR — local dev stack
+# Brings up SeekDB (OceanBase) on port 2881 (MySQL-compatible).
+# The Bun app runs OUTSIDE the compose for fast iteration: `bun run dev`.
+
+services:
+  seekdb:
+    image: oceanbase/seekdb:latest
+    container_name: tocr-seekdb
+    restart: unless-stopped
+    ports:
+      - "2881:2881"   # MySQL-compatible SQL port
+      - "2886:2886"   # RPC / management
+    environment:
+      MODE: mini      # smaller memory footprint for laptops / t3.micro
+      OB_TENANT_PASSWORD: ""
+    volumes:
+      - seekdb_data:/var/lib/oceanbase
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "mysql -h127.0.0.1 -P2881 -uroot -e 'select 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+volumes:
+  seekdb_data:
+    driver: local

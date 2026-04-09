@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.local
+.env.production
+*.log
+.DS_Store
+dist/
+build/
+.bun/
+drizzle/
+seekdb-data/
+uploads/
+test-results/
+playwright-report/
+.aws-deploy/
+*.pem

@@ -1,0 +1,3289 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Toptier – AI OCR Invoice System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Body fonts: Noto Sans Thai for Thai, DM Sans for Latin, JetBrains Mono for code -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Material Symbols (Outlined) — variable font, axes: opsz, wght, FILL, GRAD -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200" rel="stylesheet">
+  <style>
+/* ── Reset ── */
+*,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e2e8f0}
+body,html{margin:0;padding:0;line-height:1.5}
+img,svg{display:block;vertical-align:middle}
+table{border-collapse:collapse;border-spacing:0}
+input,select,textarea,button{font-family:inherit;font-size:inherit;line-height:inherit}
+textarea{resize:vertical}
+
+/* ── Display ── */
+.block{display:block}.inline-block{display:inline-block}.inline-flex{display:inline-flex}
+.flex{display:flex}.grid{display:grid}.hidden{display:none!important}
+
+/* ── Position ── */
+.relative{position:relative}.absolute{position:absolute}.sticky{position:sticky}.fixed{position:fixed}
+.top-0{top:0}.z-40{z-index:40}.z-30{z-index:30}.z-50{z-index:50}
+.inset-0{top:0;right:0;bottom:0;left:0}
+
+/* ── Flex ── */
+.flex-1{flex:1 1 0%}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}
+.flex-shrink-0{flex-shrink:0}
+.items-center{align-items:center}.items-start{align-items:flex-start}
+.justify-center{justify-content:center}.justify-between{justify-content:space-between}.justify-end{justify-content:flex-end}
+
+/* ── Grid ── */
+.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+/* ── Gap ── */
+.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-2\.5{gap:.625rem}
+.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}
+
+/* ── Space Y ── */
+.space-y-1>*+*{margin-top:.25rem}.space-y-1\.5>*+*{margin-top:.375rem}
+.space-y-2>*+*{margin-top:.5rem}.space-y-3>*+*{margin-top:.75rem}
+.space-y-4>*+*{margin-top:1rem}
+
+/* ── Sizing ── */
+.w-6{width:1.5rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-20{width:5rem}.w-full{width:100%}
+.h-9{height:2.25rem}.h-14{height:3.5rem}.h-16{height:4rem}.h-20{height:5rem}
+.h-24{height:6rem}.h-28{height:7rem}.h-32{height:8rem}.h-36{height:9rem}.h-48{height:12rem}
+.min-h-screen{min-height:100vh}.min-w-0{min-width:0}
+.max-w-7xl{max-width:80rem}.max-w-3xl{max-width:48rem}.max-w-xl{max-width:36rem}
+.max-h-40{max-height:10rem}
+
+/* ── Padding ── */
+.p-1\.5{padding:.375rem}.p-2{padding:.5rem}.p-3{padding:.75rem}
+.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}
+.p-8{padding:2rem}.p-10{padding:2.5rem}
+.px-2{padding-left:.5rem;padding-right:.5rem}
+.px-3{padding-left:.75rem;padding-right:.75rem}
+.px-4{padding-left:1rem;padding-right:1rem}
+.py-1{padding-top:.25rem;padding-bottom:.25rem}
+.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}
+.py-2{padding-top:.5rem;padding-bottom:.5rem}
+.py-3{padding-top:.75rem;padding-bottom:.75rem}
+.pt-3{padding-top:.75rem}.pt-5{padding-top:1.25rem}
+.pb-3{padding-bottom:.75rem}.pb-12{padding-bottom:3rem}
+
+/* ── Margin ── */
+.mx-auto{margin-left:auto;margin-right:auto}
+.mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-1\.5{margin-top:.375rem}
+.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}
+.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}
+.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}
+.mb-4{margin-bottom:1rem}
+
+/* ── Typography ── */
+.text-xs{font-size:.75rem;line-height:1rem}
+.text-sm{font-size:.875rem;line-height:1.25rem}
+.text-base{font-size:1rem;line-height:1.5rem}
+.text-lg{font-size:1.125rem;line-height:1.75rem}
+.text-xl{font-size:1.25rem;line-height:1.75rem}
+.text-2xl{font-size:1.5rem;line-height:2rem}
+.text-4xl{font-size:2.25rem;line-height:2.5rem}
+.text-\[10px\]{font-size:10px}.text-\[10\.5px\]{font-size:10.5px}.text-\[11px\]{font-size:11px}
+.font-normal{font-weight:400}.font-medium{font-weight:500}
+.font-semibold{font-weight:600}.font-bold{font-weight:700}
+.leading-tight{line-height:1.25}.leading-relaxed{line-height:1.625}
+.tracking-tight{letter-spacing:-.025em}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}
+
+/* ── Text Colors ── */
+.text-white{color:#fff}
+.text-slate-300{color:#cbd5e1}.text-slate-400{color:#94a3b8}.text-slate-500{color:#64748b}
+.text-slate-600{color:#475569}.text-slate-700{color:#334155}.text-slate-800{color:#1e293b}
+.text-slate-900{color:#0f172a}
+.text-sky-700{color:#0369a1}
+.text-amber-600{color:#d97706}.text-amber-700{color:#b45309}.text-amber-800{color:#92400e}
+.text-emerald-400{color:#34d399}.text-emerald-500{color:#10b981}
+.text-emerald-600{color:#059669}.text-emerald-700{color:#047857}
+.text-rose-400{color:#fb7185}
+
+/* ── Background Colors ── */
+.bg-white{background-color:#fff}.bg-slate-50{background-color:#f8fafc}
+.bg-sky-50{background-color:#f0f9ff}.bg-sky-500{background-color:#0ea5e9}
+.bg-amber-50{background-color:#fffbeb}
+.bg-emerald-100{background-color:#d1fae5}.bg-emerald-50{background-color:#ecfdf5}
+.bg-slate-200{background-color:#e2e8f0}.bg-slate-900{background-color:#0f172a}
+
+/* ── Border Colors ── */
+.border-slate-200{border-color:#e2e8f0}.border-slate-300{border-color:#cbd5e1}
+.border-sky-400{border-color:#38bdf8}
+.border-amber-200{border-color:#fde68a}.border-emerald-200{border-color:#a7f3d0}
+.border-dashed{border-style:dashed}
+
+/* ── Borders ── */
+.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}
+.border-2{border-width:2px}
+.rounded{border-radius:.25rem}.rounded-lg{border-radius:.5rem}
+.rounded-xl{border-radius:.75rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}
+
+/* ── Misc ── */
+.shadow-sm{box-shadow:0 1px 2px 0 rgba(0,0,0,.05)}
+.overflow-hidden{overflow:hidden}.overflow-auto{overflow:auto}
+.cursor-pointer{cursor:pointer}
+.transition-all{transition:all .15s ease}.transition-colors{transition:color .15s,background-color .15s,border-color .15s}
+.hover\:bg-slate-50:hover{background:#f8fafc}
+.hover\:bg-sky-50:hover{background:#f0f9ff}
+.hover\:border-sky-400:hover{border-color:#38bdf8}
+.hover\:text-rose-400:hover{color:#fb7185}
+
+/* ── Responsive md ≥768px ── */
+@media(min-width:768px){
+  .md\:flex{display:flex}
+  .md\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+/* ── Responsive lg ≥1024px ── */
+@media(min-width:1024px){
+  .lg\:col-span-2{grid-column:span 2/span 2}
+  .lg\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .lg\:grid-cols-6{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media(max-width:640px){.hide-mobile{display:none}}
+    html,body{font-family:'Noto Sans Thai','DM Sans',system-ui,sans-serif;font-feature-settings:"kern";-webkit-font-smoothing:antialiased;}
+    .mono{font-family:'JetBrains Mono',monospace;}
+    /* Material Symbols base — same line-height as text so it sits in flow */
+    .ms{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:18px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;vertical-align:middle;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
+    .ms-sm{font-size:14px}
+    .ms-lg{font-size:24px}
+    .ms-xl{font-size:32px}
+    .ms-fill{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;}
+    /* Pre-auth state: hide entire app shell, show only the login landing page */
+    body.pre-auth > header,
+    body.pre-auth > #step-bar-wrap,
+    body.pre-auth > main { display: none !important; }
+    body.pre-auth #login-overlay { display: flex !important; }
+    body:not(.pre-auth) #login-overlay { display: none !important; }
+    body.pre-auth { background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 45%, #ecfdf5 100%); }
+    body.pre-auth #login-overlay { background: transparent; backdrop-filter: none; }
+    body.pre-auth .login-card { box-shadow: 0 20px 60px -15px rgba(15,23,42,.18), 0 8px 24px -8px rgba(15,23,42,.08); }
+    /* Settings tabs */
+    .cfg-tab { padding: 8px 14px; font-size: 12px; font-weight: 500; color: #64748b; border: 0; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
+    .cfg-tab:hover { color: #0369a1; }
+    .cfg-tab-active { color: #0369a1; border-bottom-color: #0ea5e9; font-weight: 600; }
+    /* Upload mode radio cards */
+    .upload-mode-radio { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; cursor: pointer; transition: all .15s; }
+    .upload-mode-radio:hover { border-color: #38bdf8; }
+    .upload-mode-radio:has(input:checked) { border-color: #0ea5e9; background: #f0f9ff; box-shadow: 0 1px 3px rgba(14,165,233,.12); }
+    .upload-mode-radio input[type="radio"] { width: 16px; height: 16px; margin-top: 2px; accent-color: #0ea5e9; flex-shrink: 0; cursor: pointer; }
+    @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes scanLine{0%{top:0}100%{top:100%}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+    @keyframes progressFill{from{width:0}to{width:var(--w,100%)}}
+    .fade-up{animation:fadeUp .3s ease forwards}
+    .scanning{position:relative;overflow:hidden}
+    .scanning::after{content:'';position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#0ea5e9,transparent);animation:scanLine 1.8s ease-in-out infinite;pointer-events:none}
+    .spinner{width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:#0ea5e9;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
+    .blink-cursor{animation:blink .8s step-start infinite}
+    .badge{font-size:.7rem;padding:.18rem .6rem;border-radius:9999px;border-width:1px;display:inline-flex;align-items:center;gap:3px;font-weight:500;white-space:nowrap}
+    .step-card{cursor:pointer;transition:all .2s;border:1.5px solid #e2e8f0}
+    .step-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.08)}
+    .step-card.s-active{border-color:#0ea5e9;background:#f0f9ff}
+    .step-card.s-done{border-color:#bbf7d0;background:#f0fdf4}
+    .step-dot{width:2rem;height:2rem;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0;transition:all .3s}
+    .card{background:white;border-radius:1rem;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    .glass{backdrop-filter:saturate(180%) blur(10px);background:rgba(255,255,255,.9)}
+    .progress-bar{height:4px;background:#e2e8f0;border-radius:9999px;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#0ea5e9,#06b6d4);border-radius:9999px;transition:width .3s ease}
+    input[type=text],input[type=date],select,textarea{border:1px solid #cbd5e1;border-radius:8px;padding:6px 10px;font-size:12px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s;background:white}
+    input:focus,select:focus,textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.12)}
+    .btn{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;font-family:inherit}
+    .btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+    .btn-sky{background:#0ea5e9;color:white;border-color:#0284c7}.btn-sky:hover{background:#0284c7}
+    .btn-emerald{background:#059669;color:white;border-color:#047857}.btn-emerald:hover{background:#047857}
+    .btn-ghost{background:white;color:#374151;border-color:#d1d5db}.btn-ghost:hover{background:#f9fafb}
+    .btn-rose-o{background:white;color:#dc2626;border-color:#fca5a5}.btn-rose-o:hover{background:#fef2f2}
+    .btn-amber-o{background:white;color:#b45309;border-color:#fcd34d}.btn-amber-o:hover{background:#fffbeb}
+    tbody tr{border-top:1px solid #f1f5f9}
+    tbody tr:hover{background:#fafafa}
+    section.hidden{display:none}
+    .terminal{background:#0f172a;color:#94a3b8;font-family:'JetBrains Mono',monospace;font-size:10.5px;border-radius:10px;padding:12px;overflow-y:auto;line-height:1.7}
+    .terminal .ts{color:#059669}.terminal .e{color:#34d399}.terminal .w{color:#fbbf24}.terminal .r{color:#f87171}.terminal .i{color:#60a5fa}
+    .ocr-row{cursor:pointer;transition:background .15s}
+    .ocr-row:hover td{background:rgba(14,165,233,.06)}
+    .ocr-row.hl td{background:rgba(14,165,233,.1)!important}
+    .inv-doc{font-family:'DM Sans',sans-serif;font-size:10.5px;background:white;padding:18px;line-height:1.55}
+    .stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);border:3px solid;border-radius:6px;font-weight:800;font-size:1.2rem;letter-spacing:.15em;padding:6px 18px;pointer-events:none;opacity:.55}
+    .stamp-approved{border-color:#059669;color:#059669}
+    .stamp-rejected{border-color:#dc2626;color:#dc2626}
+    .conf-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block}
+    @media(max-width:640px){.hide-mobile{display:none}}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pre-auth">
+
+<!-- ===================== LOGIN LANDING PAGE ===================== -->
+<div id="login-overlay" class="fixed inset-0 z-50 items-center justify-center p-4" style="display:flex">
+  <div class="login-card card p-8" style="width:100%;max-width:420px">
+    <div class="flex flex-col items-center text-center mb-6">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-3" style="background:linear-gradient(135deg,#0ea5e9,#0284c7)">
+        <span class="ms ms-fill text-white" style="font-size:34px">document_scanner</span>
+      </div>
+      <h1 class="font-bold text-xl text-slate-900 leading-tight">Toptier AI OCR</h1>
+      <p class="text-xs text-slate-500 mt-1">ระบบประมวลผลใบกำกับภาษีด้วย AI</p>
+    </div>
+
+    <form onsubmit="event.preventDefault();doLogin()" class="space-y-3">
+      <div>
+        <label class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">ชื่อผู้ใช้</label>
+        <div class="relative">
+          <span class="ms ms-sm absolute text-slate-400" style="left:10px;top:50%;transform:translateY(-50%);pointer-events:none">person</span>
+          <input id="lg-user" type="text" autocomplete="username" value="admin" style="width:100%;padding-left:32px" required>
+        </div>
+      </div>
+      <div>
+        <label class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">รหัสผ่าน</label>
+        <div class="relative">
+          <span class="ms ms-sm absolute text-slate-400" style="left:10px;top:50%;transform:translateY(-50%);pointer-events:none">lock</span>
+          <input id="lg-pass" type="password" autocomplete="current-password" value="admin123" style="width:100%;padding-left:32px" required>
+        </div>
+      </div>
+      <div id="lg-err" class="hidden text-[11px] p-2.5 rounded-lg flex items-center gap-1.5" style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626">
+        <span class="ms ms-sm">error</span>
+        <span id="lg-err-msg"></span>
+      </div>
+      <button type="submit" id="lg-btn" class="btn btn-sky w-full" style="padding:10px 16px;font-size:13px">
+        <span class="ms ms-sm">login</span> เข้าสู่ระบบ
+      </button>
+    </form>
+
+    <div class="mt-5 pt-4 border-t">
+      <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+        <span class="ms ms-sm">science</span> บัญชีทดสอบ
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-[11px]">
+        <button type="button" onclick="quickFill('admin','admin123')" class="p-2 rounded-lg border border-slate-200 hover:border-sky-300 hover:bg-sky-50 transition-all text-left">
+          <div class="font-semibold text-slate-700 flex items-center gap-1"><span class="ms ms-sm text-sky-600">admin_panel_settings</span> admin</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">เข้าได้ทุกเมนู</div>
+        </button>
+        <button type="button" onclick="quickFill('demo','demo123')" class="p-2 rounded-lg border border-slate-200 hover:border-amber-300 hover:bg-amber-50 transition-all text-left">
+          <div class="font-semibold text-slate-700 flex items-center gap-1"><span class="ms ms-sm text-amber-600">person</span> demo</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">เฉพาะ Step 1–4</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 text-center text-[10px] text-slate-400">
+      Bun · Hono · SeekDB · Powered by AI OCR
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SETTINGS MODAL (admin only) ===================== -->
+<div id="settings-modal" class="fixed inset-0 z-50 hidden" style="background:rgba(15,23,42,.65);backdrop-filter:blur(4px)">
+  <div class="card mx-auto mt-8 p-6" style="max-width:680px;max-height:88vh;overflow:auto">
+    <div class="flex justify-between items-center mb-3">
+      <div>
+        <h2 class="font-semibold text-base flex items-center gap-1.5"><span class="ms">admin_panel_settings</span> หน้า Admin — ตั้งค่าระบบ</h2>
+        <p class="text-[11px] text-slate-500">จัดการ AI provider, ประเภทเอกสาร และค่าประเมินราคา (admin เท่านั้น)</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn text-xs" onclick="closeSettings();doLogout()" style="background:white;color:#dc2626;border-color:#fca5a5" title="ออกจากระบบ"><span class="ms ms-sm">logout</span> ออกจากระบบ</button>
+        <button class="btn btn-ghost text-xs" onclick="closeSettings()" title="ปิดหน้าต่าง">✕</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 border-b mb-4 -mt-1">
+      <button class="cfg-tab cfg-tab-active" data-tab="ai" onclick="setCfgTab('ai')">
+        <span class="ms ms-sm">smart_toy</span> AI Provider
+      </button>
+      <button class="cfg-tab" data-tab="doctype" onclick="setCfgTab('doctype')">
+        <span class="ms ms-sm">category</span> ประเภทเอกสาร
+      </button>
+      <button class="cfg-tab" data-tab="cost" onclick="setCfgTab('cost')">
+        <span class="ms ms-sm">payments</span> ค่าประเมินราคา
+      </button>
+    </div>
+
+    <!-- TAB 1: AI Provider -->
+    <div id="cfg-tab-ai" class="cfg-tab-content space-y-4 text-[12px]">
+      <div>
+        <label class="block font-medium text-slate-600 mb-1">OCR Provider หลัก</label>
+        <select id="cfg-primary" style="width:100%"></select>
+      </div>
+      <div>
+        <label class="block font-medium text-slate-600 mb-1">Fallback Provider <span class="text-slate-400 font-normal">(เมื่อ confidence ต่ำกว่า threshold)</span></label>
+        <select id="cfg-fallback" style="width:100%">
+          <option value="">— ไม่ใช้ fallback —</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Fallback threshold</label>
+          <input id="cfg-threshold" type="number" min="0" max="1" step="0.05" style="width:100%">
+        </div>
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Monthly budget (THB)</label>
+          <input id="cfg-budget" type="number" min="0" step="100" style="width:100%">
+        </div>
+      </div>
+      <div class="text-right">
+        <button class="btn btn-sky" onclick="saveConfig()"><span class="ms ms-sm">save</span> บันทึก config</button>
+      </div>
+      <div class="border-t pt-4">
+        <div class="font-semibold text-slate-700 mb-2 text-[12px] flex items-center gap-1.5"><span class="ms ms-sm">key</span> API Keys</div>
+        <p class="text-[10px] text-slate-500 mb-2">Key ถูกเข้ารหัสด้วย AES-256-GCM ใน SeekDB ก่อนเก็บ — แสดงเป็น hint เท่านั้น</p>
+        <div id="cfg-creds" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Document Types -->
+    <div id="cfg-tab-doctype" class="cfg-tab-content hidden space-y-3 text-[12px]">
+      <p class="text-[11px] text-slate-500">Master ของประเภทเอกสาร — แสดงใน dropdown ของ Step 1</p>
+      <div id="cfg-doctype-list" class="space-y-2"></div>
+      <div class="border-t pt-3">
+        <div class="font-semibold text-slate-700 mb-2 flex items-center gap-1.5"><span class="ms ms-sm">add_circle</span> เพิ่มประเภทใหม่</div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-0.5">Code (a-z, _, -)</label>
+            <input id="dt-new-code" type="text" placeholder="freight" style="width:100%">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-0.5">Material icon name</label>
+            <input id="dt-new-icon" type="text" placeholder="local_shipping" style="width:100%">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-[10px] text-slate-500 mb-0.5">ชื่อ</label>
+            <input id="dt-new-name" type="text" placeholder="ค่าขนส่ง / Freight" style="width:100%">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-0.5">ปริมาณ/เดือน (label)</label>
+            <input id="dt-new-volume" type="text" placeholder="500 inv/เดือน" style="width:100%">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-0.5">Sort order</label>
+            <input id="dt-new-sort" type="number" min="0" max="9999" value="10" style="width:100%">
+          </div>
+        </div>
+        <div class="text-right mt-2">
+          <button class="btn btn-sky text-[11px]" onclick="createDocType()"><span class="ms ms-sm">add</span> เพิ่ม</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Cost Settings -->
+    <div id="cfg-tab-cost" class="cfg-tab-content hidden space-y-3 text-[12px]">
+      <p class="text-[11px] text-slate-500">ค่าประเมินที่ใช้คำนวณราคาในหน้า Step 1</p>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] text-slate-500 mb-0.5">USD → THB</label>
+          <input id="cs-usd" type="number" step="0.01" min="0" style="width:100%">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-500 mb-0.5">Pages/file (avg)</label>
+          <input id="cs-ppf" type="number" step="0.1" min="0" style="width:100%">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-500 mb-0.5">OCR input tokens / page</label>
+          <input id="cs-oin" type="number" min="0" style="width:100%">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-500 mb-0.5">OCR output tokens / page</label>
+          <input id="cs-oout" type="number" min="0" style="width:100%">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-500 mb-0.5">Matching input tokens / inv</label>
+          <input id="cs-min" type="number" min="0" style="width:100%">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-500 mb-0.5">Matching output tokens / inv</label>
+          <input id="cs-mout" type="number" min="0" style="width:100%">
+        </div>
+        <div class="col-span-2">
+          <label class="block text-[10px] text-slate-500 mb-0.5">Matching provider</label>
+          <select id="cs-mprov" style="width:100%"></select>
+        </div>
+      </div>
+
+      <div class="border-t pt-3">
+        <div class="font-semibold text-slate-700 mb-2 text-[12px] flex items-center gap-1.5">
+          <span class="ms ms-sm">tune</span> Provider price overrides
+          <span class="text-[10px] text-slate-400 font-normal">(THB / 1k tokens)</span>
+        </div>
+        <div id="cs-overrides" class="space-y-2"></div>
+      </div>
+
+      <div class="text-right">
+        <button class="btn btn-sky" onclick="saveCostSettings()"><span class="ms ms-sm">save</span> บันทึก cost config</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-40 glass border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+    <img src="https://toptier.co.th/img/logo_ts.png" alt="Toptier" class="h-9 rounded" onerror="this.style.display='none'">
+    <div class="flex-1 min-w-0">
+      <h1 class="font-semibold text-base leading-tight truncate">ระบบ AI OCR + AI Matching สำหรับ Invoice Processing</h1>
+      <p class="text-xs text-slate-400" id="hdr-sub">อัปโหลด → OCR (Claude Vision) → AI Matching → ตรวจสอบ → ส่งข้อมูล</p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap justify-end">
+      <span class="hide-mobile flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span style="width:7px;height:7px;border-radius:50%;background:#059669;display:inline-block;animation:pulse 2s infinite"></span> ออนไลน์
+      </span>
+      <div id="hdr-user" class="hidden items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200" style="display:none"></div>
+      <button id="hdr-settings" class="btn text-xs hidden" onclick="openSettings()" style="background:#0ea5e9;color:white;border-color:#0284c7" title="พื้นที่ admin: จัดการ AI / ประเภทเอกสาร / ราคา"><span class="ms ms-sm">admin_panel_settings</span> Admin</button>
+      <button class="btn text-xs" onclick="doLogout()" style="background:white;color:#dc2626;border-color:#fca5a5" title="ออกจากระบบ"><span class="ms ms-sm">logout</span> ออกจากระบบ</button>
+    </div>
+  </div>
+</header>
+
+<!-- STEP BAR -->
+<div id="step-bar-wrap" class="max-w-7xl mx-auto px-4 pt-5 pb-3">
+  <div class="grid grid-cols-3 lg:grid-cols-6 gap-2" id="step-bar">
+    <div class="step-card s-active card flex items-center gap-2.5 p-3" data-s="1">
+      <div class="step-dot bg-sky-500 text-white">1</div>
+      <div><div class="font-semibold text-xs">อัปโหลด</div><div class="text-[10px] text-slate-500 hide-mobile">เพิ่มไฟล์</div></div>
+    </div>
+    <div class="step-card card flex items-center gap-2.5 p-3" data-s="2">
+      <div class="step-dot bg-slate-200 text-slate-500">2</div>
+      <div><div class="font-semibold text-xs">OCR</div><div class="text-[10px] text-slate-500 hide-mobile">ดึงข้อมูล</div></div>
+    </div>
+    <div class="step-card card flex items-center gap-2.5 p-3" data-s="3">
+      <div class="step-dot bg-slate-200 text-slate-500">3</div>
+      <div><div class="font-semibold text-xs">AI Matching</div><div class="text-[10px] text-slate-500 hide-mobile">3-Way Match</div></div>
+    </div>
+    <div class="step-card card flex items-center gap-2.5 p-3" data-s="4">
+      <div class="step-dot bg-slate-200 text-slate-500">4</div>
+      <div><div class="font-semibold text-xs">ตรวจสอบ</div><div class="text-[10px] text-slate-500 hide-mobile">อนุมัติ</div></div>
+    </div>
+    <div class="step-card card flex items-center gap-2.5 p-3" data-s="5">
+      <div class="step-dot bg-slate-200 text-slate-500">5</div>
+      <div><div class="font-semibold text-xs">ส่งข้อมูล</div><div class="text-[10px] text-slate-500 hide-mobile">บันทึก ERP</div></div>
+    </div>
+    <div class="step-card card flex items-center gap-2.5 p-3" data-s="6">
+      <div class="step-dot bg-slate-200 text-slate-500">✓</div>
+      <div><div class="font-semibold text-xs">เสร็จสิ้น</div><div class="text-[10px] text-slate-500 hide-mobile">สรุปผล</div></div>
+    </div>
+  </div>
+</div>
+
+<main class="max-w-7xl mx-auto px-4 pb-12 space-y-4">
+
+<!-- ===================== STEP 1: UPLOAD ===================== -->
+<section id="s1" class="space-y-4">
+  <div class="grid lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 card p-6">
+      <div class="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <h2 class="font-semibold mb-1">① อัปโหลดเอกสาร</h2>
+          <p class="text-xs text-slate-500">เลือกโหมดให้ตรงกับงาน — สูงสุด <strong>100 ไฟล์</strong> ต่อ batch</p>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div class="text-[10px] text-slate-400 mb-1 ocr-go-label">ยังไม่มีไฟล์</div>
+          <button class="btn btn-emerald ocr-go-btn" disabled onclick="submitBatchAndGo()">
+            <span class="ms ms-sm">play_arrow</span> เริ่มประมวลผล OCR
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode selector: real radio buttons -->
+      <div class="mb-4">
+        <div class="text-[11px] font-semibold text-slate-500 mb-2 flex items-center gap-1">
+          <span class="ms ms-sm">tune</span> เลือกโหมดอัปโหลด
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="upload-mode-radio">
+            <input type="radio" name="upload-mode" value="manual" checked onchange="setUploadMode('manual')">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="ms ms-sm text-sky-600">edit_note</span>
+                <span class="font-semibold text-[12px] text-slate-700">Single Upload</span>
+              </div>
+              <div class="text-[10px] text-slate-500 mt-0.5">อัปโหลดทีละไฟล์ · เลือกประเภทแยก</div>
+            </div>
+          </label>
+          <label class="upload-mode-radio">
+            <input type="radio" name="upload-mode" value="bulk" onchange="setUploadMode('bulk')">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="ms ms-sm text-sky-600">cloud_upload</span>
+                <span class="font-semibold text-[12px] text-slate-700">Bulk Upload</span>
+              </div>
+              <div class="text-[10px] text-slate-500 mt-0.5">หลายไฟล์ · ประเภทเดียวกันทั้งชุด</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- ── Manual mode ── -->
+      <div id="upload-mode-manual" class="upload-mode-content">
+        <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 mb-2">
+          <span class="flex items-center gap-1"><span class="ms ms-sm">list_alt</span> รายการเอกสาร</span>
+          <span id="manual-count" class="mono text-slate-400 font-normal">0 ไฟล์</span>
+        </div>
+        <div id="manual-rows" class="space-y-2"></div>
+        <button class="btn btn-ghost w-full mt-2 text-[11px]" onclick="addManualRow()">
+          <span class="ms ms-sm">add_circle</span> เพิ่มรายการ
+        </button>
+        <p class="text-[10px] text-slate-400 mt-2 text-center">รองรับ PDF, JPG, PNG, WebP · สูงสุด 20 MB ต่อไฟล์</p>
+      </div>
+
+      <!-- ── Bulk mode ── -->
+      <div id="upload-mode-bulk" class="upload-mode-content hidden">
+        <div class="mb-3 p-3 rounded-xl border bg-slate-50">
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1 flex items-center gap-1">
+            <span class="ms ms-sm">category</span> ประเภทเอกสาร (ใช้กับทั้งชุด)
+          </label>
+          <select id="bulk-type-select" style="width:100%" onchange="setBulkType(this.value)"></select>
+        </div>
+
+        <div id="bulk-dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center text-center cursor-pointer transition-all hover:border-sky-400 hover:bg-sky-50 mb-4"
+             onclick="document.getElementById('bulk-file-input').click()">
+          <div class="w-14 h-14 rounded-2xl bg-sky-50 flex items-center justify-center mb-2">
+            <span class="ms ms-xl text-sky-600">cloud_upload</span>
+          </div>
+          <p class="font-medium text-sm text-slate-700">ลากไฟล์หลายไฟล์มาวางที่นี่</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">หรือคลิกเพื่อเลือก · ทุกไฟล์จะใช้ประเภทด้านบน</p>
+          <p class="text-[10px] text-slate-400 mt-2">รองรับ PDF, JPG, PNG, WebP · สูงสุด 20 MB ต่อไฟล์ · ไม่เกิน 100 ไฟล์</p>
+          <input type="file" id="bulk-file-input" multiple
+                 accept="image/png,image/jpeg,image/webp,application/pdf"
+                 class="hidden"
+                 onchange="setBulkFiles(this.files); this.value=''">
+        </div>
+
+        <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 mb-2">
+          <span class="flex items-center gap-1"><span class="ms ms-sm">list_alt</span> ไฟล์ที่เลือก</span>
+          <span id="bulk-count" class="mono text-slate-400 font-normal">0 ไฟล์</span>
+        </div>
+        <div id="bulk-file-list" class="space-y-1"></div>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between border-t pt-3">
+        <span class="text-xs text-slate-400 ocr-go-label">ยังไม่มีไฟล์</span>
+        <button class="btn btn-emerald ocr-go-btn" disabled onclick="submitBatchAndGo()">
+          <span class="ms ms-sm">play_arrow</span> เริ่มประมวลผล OCR
+        </button>
+      </div>
+    </div>
+
+    <!-- Right column: cost on top, then AI OCR engine -->
+    <div class="space-y-4">
+      <!-- Cost estimation (compact) -->
+      <div class="card p-4" style="background:linear-gradient(135deg,#ffffff 0%,#f0fdf4 100%);border-color:#a7f3d0">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="font-semibold text-sm flex items-center gap-1.5">
+            <span class="ms ms-sm ms-fill text-emerald-600">payments</span> ประเมินราคา
+          </h2>
+          <span class="text-[9px] text-slate-400" id="cost-source"></span>
+        </div>
+        <p class="text-[10px] text-slate-500 mb-2">รวม IN + OUT ทั้ง flow</p>
+        <div id="cost-breakdown" class="text-[11px] text-slate-300 italic">เพิ่มไฟล์เพื่อดูค่าประเมิน...</div>
+      </div>
+
+      <!-- AI provider radio -->
+      <div class="card p-4">
+        <h2 class="font-semibold text-sm mb-1 flex items-center gap-1.5">
+          <span class="ms ms-sm text-sky-600">smart_toy</span> AI OCR Engine
+        </h2>
+        <p class="text-[10px] text-slate-500 mb-3">เลือก provider ที่จะใช้กับไฟล์ชุดนี้</p>
+        <div id="ai-provider-radios" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== STEP 2: OCR ===================== -->
+<section id="s2" class="hidden space-y-4">
+
+  <!-- Empty state when navigated directly without uploading -->
+  <div id="s2-empty" class="card p-10 text-center hidden">
+    <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
+      <span class="ms ms-xl text-slate-400">cloud_off</span>
+    </div>
+    <p class="font-medium text-slate-600 mb-1">ยังไม่มี batch ที่กำลังประมวลผล</p>
+    <p class="text-[12px] text-slate-500 mb-4">กลับไปอัปโหลดเอกสารใน Step 1 ก่อน</p>
+    <button class="btn btn-sky" onclick="goTo(1)"><span class="ms ms-sm">arrow_back</span> กลับไปอัปโหลด</button>
+  </div>
+
+  <!-- Real batch UI -->
+  <div id="s2-content" class="space-y-4">
+    <!-- Batch header -->
+    <div class="card p-4">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px]">
+        <div>
+          <div class="text-slate-500">Batch</div>
+          <div class="font-bold mono text-slate-900" id="s2-batch-name">—</div>
+        </div>
+        <div>
+          <div class="text-slate-500">สถานะ</div>
+          <div class="font-semibold" id="s2-batch-status">—</div>
+        </div>
+        <div>
+          <div class="text-slate-500">ความคืบหน้า</div>
+          <div class="font-semibold" id="s2-batch-progress">— / —</div>
+        </div>
+        <div>
+          <div class="text-slate-500">ค่าใช้จ่ายจริง</div>
+          <div class="font-semibold mono text-emerald-700" id="s2-batch-cost">฿0.00</div>
+        </div>
+      </div>
+      <div class="progress-bar mt-3"><div class="progress-fill" id="s2-batch-progress-bar" style="width:0%"></div></div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-4">
+      <!-- Queue (real invoices from current batch) -->
+      <div class="card p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold text-sm flex items-center gap-1.5"><span class="ms ms-sm">list_alt</span> คิว OCR</h2>
+          <button class="btn btn-ghost text-[10px]" onclick="reprocessAllPending()" title="รัน OCR ใหม่กับไฟล์ที่ยังไม่เสร็จ">
+            <span class="ms ms-sm">refresh</span> รันใหม่
+          </button>
+        </div>
+        <div id="s2-queue" class="space-y-2"></div>
+      </div>
+
+      <!-- Invoice Preview -->
+      <div class="card p-4">
+        <h2 class="font-semibold text-sm mb-2 flex items-center gap-1.5"><span class="ms ms-sm">visibility</span> ตัวอย่างเอกสาร</h2>
+        <div id="inv-preview-2" class="rounded-xl overflow-hidden border border-slate-200 min-h-[200px] flex items-center justify-center text-[11px] text-slate-300 italic">
+          เลือกไฟล์เพื่อดูตัวอย่าง
+        </div>
+        <div id="inv-preview-meta" class="mt-2 text-[10px] text-slate-400"></div>
+      </div>
+
+      <!-- OCR Fields -->
+      <div class="card p-4">
+        <h2 class="font-semibold text-sm mb-2 flex items-center gap-1.5"><span class="ms ms-sm">data_object</span> ข้อมูลที่ดึงได้</h2>
+        <div id="ocr-fields-pane" class="text-[11px] text-slate-300 italic text-center py-4">
+          เลือกไฟล์เพื่อดูฟิลด์
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-between">
+    <button class="btn btn-ghost" onclick="goTo(1)"><span class="ms ms-sm">arrow_back</span> อัปโหลด</button>
+    <button class="btn btn-sky" onclick="goTo(3)">ไปขั้นตอนที่ 3: AI Matching <span class="ms ms-sm">arrow_forward</span></button>
+  </div>
+</section>
+
+<!-- ===================== STEP 3: AI MATCHING ===================== -->
+<section id="s3" class="hidden space-y-4">
+  <div class="grid lg:grid-cols-3 gap-4">
+
+    <!-- 3-Way Match Result -->
+    <div class="lg:col-span-2 card p-5">
+      <div class="flex items-center justify-between mb-1">
+        <div>
+          <h2 class="font-semibold">AI Matching Engine</h2>
+          <p class="text-[11px] text-slate-500">3-Way Match: Invoice ↔ PO ↔ GR · Vendor Master · GL Code Suggestion</p>
+        </div>
+        <span class="badge" style="border-color:#bae6fd;background:#f0f9ff;color:#0369a1">Claude Sonnet 4.6</span>
+      </div>
+
+      <!-- Match Summary Cards -->
+      <div class="grid grid-cols-3 gap-2 mt-3 mb-4">
+        <div class="p-3 rounded-xl border bg-emerald-50 border-emerald-200 text-center">
+          <div class="text-xl font-bold text-emerald-700" id="m-auto">0</div>
+          <div class="text-[10px] text-emerald-600 mt-0.5">Auto Post ≥90%</div>
+        </div>
+        <div class="p-3 rounded-xl border bg-amber-50 border-amber-200 text-center">
+          <div class="text-xl font-bold text-amber-700" id="m-review">0</div>
+          <div class="text-[10px] text-amber-600 mt-0.5">Review 60–89%</div>
+        </div>
+        <div class="p-3 rounded-xl border bg-rose-50 border-rose-200 text-center">
+          <div class="text-xl font-bold text-rose-600" id="m-except">0</div>
+          <div class="text-[10px] text-rose-500 mt-0.5">Exception &lt;60%</div>
+        </div>
+      </div>
+
+      <!-- Match Table -->
+      <div class="overflow-hidden rounded-xl border">
+        <table class="w-full text-[11px]">
+          <thead class="bg-slate-50"><tr>
+            <th class="p-2 text-left text-slate-500 font-medium">เลขที่</th>
+            <th class="p-2 text-left text-slate-500 font-medium">ผู้ขาย</th>
+            <th class="p-2 text-left text-slate-500 font-medium">PO Match</th>
+            <th class="p-2 text-left text-slate-500 font-medium">Amount</th>
+            <th class="p-2 text-left text-slate-500 font-medium">GL แนะนำ</th>
+            <th class="p-2 text-center text-slate-500 font-medium">Score</th>
+            <th class="p-2 text-left text-slate-500 font-medium">Decision</th>
+          </tr></thead>
+          <tbody id="match-tbl"></tbody>
+        </table>
+      </div>
+
+      <!-- AI Reasoning -->
+      <div class="mt-4">
+        <div class="text-[11px] font-semibold text-slate-600 mb-2 flex items-center gap-1.5">
+          <span class="ms ms-sm text-sky-600">smart_toy</span> AI Matching Reasoning
+          <span class="text-[10px] font-normal text-slate-400">คลิกแถวด้านบนเพื่อดู reasoning</span>
+        </div>
+        <div class="terminal h-28 overflow-auto" id="match-reason">
+          <div style="color:#475569"># เลือก invoice เพื่อดู AI reasoning...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Match Detail Panel -->
+    <div class="card p-5">
+      <h2 class="font-semibold text-sm mb-3">รายละเอียด Match</h2>
+      <div id="match-detail">
+        <div class="flex items-center justify-center h-32 text-slate-300 text-sm flex-col gap-2">
+          <span class="ms ms-xl">manage_search</span>
+          <span class="text-xs">เลือก Invoice เพื่อดูรายละเอียด</span>
+        </div>
+      </div>
+
+      <!-- GL Code Override -->
+      <div class="mt-4 pt-4 border-t">
+        <div class="text-[11px] font-semibold text-slate-600 mb-2">ปรับ GL Code (ถ้าต้องการ)</div>
+        <div class="space-y-2 text-[11px]">
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-1">รหัสบัญชี (GL)</label>
+            <input type="text" id="ovr-gl" placeholder="เช่น 5110-Material" style="width:100%">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-1">Cost Center</label>
+            <input type="text" id="ovr-cc" placeholder="เช่น WH-A01" style="width:100%">
+          </div>
+          <button class="btn btn-ghost w-full text-[11px]" onclick="applyOverride()"><span class="ms ms-sm">save</span> บันทึกการแก้ไข</button>
+        </div>
+      </div>
+
+      <!-- Process Output Info -->
+      <div class="mt-4 pt-3 border-t">
+        <div class="text-[10px] font-semibold text-slate-500 mb-1">Output สำหรับ Process นี้</div>
+        <div class="p-2 rounded-lg text-[11px]" id="proc-output-info" style="background:#f0f9ff;border:1px solid #bae6fd;color:#0369a1">
+          📦 Stock: Export Excel/CSV → Upload SAP
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex justify-between">
+    <button class="btn btn-ghost" onclick="goTo(2)">← OCR</button>
+    <button class="btn btn-sky" onclick="goTo(4)">ไปขั้นตอนที่ 4: ตรวจสอบ →</button>
+  </div>
+</section>
+
+<!-- ===================== STEP 4: REVIEW ===================== -->
+<section id="s4" class="hidden space-y-4">
+  <div class="grid lg:grid-cols-3 gap-4">
+    <!-- Queue -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold text-sm">คิวสำหรับตรวจสอบ</h2>
+        <select class="text-[10px] rounded-lg" style="width:auto;padding:3px 6px" id="q-filter" onchange="renderQueue()">
+          <option value="all">ทั้งหมด</option>
+          <option value="pending">รอตรวจสอบ</option>
+          <option value="approved">อนุมัติแล้ว</option>
+          <option value="hold">พักไว้</option>
+          <option value="rejected">ไม่อนุมัติ</option>
+        </select>
+      </div>
+      <div class="space-y-2 text-xs" id="rev-queue"></div>
+      <div class="mt-4 space-y-2">
+        <button class="btn btn-emerald w-full text-[11px]" onclick="bulkAction('approved')"><span class="ms ms-sm">check_circle</span> อนุมัติที่เลือก</button>
+        <button class="btn btn-amber-o w-full text-[11px]" onclick="bulkAction('hold')"><span class="ms ms-sm">pause_circle</span> พักรายการที่เลือก</button>
+        <button class="btn btn-rose-o w-full text-[11px]" onclick="bulkAction('rejected')"><span class="ms ms-sm">cancel</span> ไม่อนุมัติที่เลือก</button>
+      </div>
+      <div class="mt-3 pt-3 border-t text-[11px] text-slate-500 space-y-1.5">
+        <div class="flex justify-between"><span>รอตรวจสอบ</span><span class="font-semibold text-amber-600" id="cnt-p">2</span></div>
+        <div class="flex justify-between"><span>อนุมัติแล้ว</span><span class="font-semibold text-emerald-600" id="cnt-a">1</span></div>
+        <div class="flex justify-between"><span>พักไว้ / ไม่อนุมัติ</span><span class="font-semibold text-slate-500" id="cnt-h">0</span></div>
+      </div>
+    </div>
+
+    <!-- Coding Panel -->
+    <div class="card p-5 text-[11px]">
+      <h2 class="font-semibold text-sm mb-3">รหัสบัญชีและการกระจายยอด</h2>
+      <div class="grid grid-cols-2 gap-2 mb-3 p-3 rounded-xl bg-slate-50 border">
+        <div><div class="text-slate-500 text-[10px]">ผู้ขาย</div><div class="font-semibold" id="d-vendor">—</div></div>
+        <div><div class="text-slate-500 text-[10px]">เลขที่เอกสาร</div><div class="font-semibold mono" id="d-inv">—</div></div>
+        <div><div class="text-slate-500 text-[10px]">วันที่</div><div id="d-date">—</div></div>
+        <div><div class="text-slate-500 text-[10px]">ยอดรวมสุทธิ</div><div class="font-semibold text-slate-900" id="d-total">—</div></div>
+      </div>
+      <div class="overflow-hidden rounded-xl border mb-2">
+        <table class="w-full text-[11px]">
+          <thead class="bg-slate-50"><tr>
+            <th class="p-2 text-left text-slate-500 font-medium">รายการ</th>
+            <th class="p-2 text-left text-slate-500 font-medium">รหัสบัญชี</th>
+            <th class="p-2 text-left text-slate-500 font-medium">CC</th>
+            <th class="p-2 text-right text-slate-500 font-medium">ยอด</th>
+          </tr></thead>
+          <tbody id="d-lines"><tr><td colspan="4" class="p-4 text-center text-slate-300 text-[11px]">เลือกใบแจ้งหนี้เพื่อดู</td></tr></tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between mb-2 text-[10px] text-slate-500">
+        <span>AI Score: <strong class="text-sky-700" id="d-score">—</strong></span>
+        <span>ส่วนต่าง: <strong class="text-emerald-600" id="d-diff">—</strong></span>
+      </div>
+      <label class="block text-[10px] font-medium text-slate-500 mb-1">หมายเหตุผู้ตรวจสอบ</label>
+      <textarea id="rev-note" class="h-14 w-full text-[11px]" placeholder="บันทึกสำหรับทีมบัญชี..."></textarea>
+      <div class="flex gap-2 mt-3">
+        <button class="btn btn-emerald flex-1 text-[11px]" id="btn-apv" disabled onclick="doAction('approved')"><span class="ms ms-sm">check_circle</span> อนุมัติ</button>
+        <button class="btn btn-amber-o text-[11px]" id="btn-hld" disabled onclick="doAction('hold')"><span class="ms ms-sm">pause_circle</span></button>
+        <button class="btn btn-rose-o text-[11px]" id="btn-rej" disabled onclick="doAction('rejected')"><span class="ms ms-sm">cancel</span></button>
+      </div>
+    </div>
+
+    <!-- Invoice Preview (Review) -->
+    <div class="card p-4">
+      <h2 class="font-semibold text-sm mb-2">ตัวอย่างเอกสาร</h2>
+      <div class="relative rounded-xl overflow-hidden border border-slate-200" id="inv-preview-4">
+        <div class="flex items-center justify-center h-48 text-slate-300 text-sm">เลือกใบแจ้งหนี้เพื่อแสดง</div>
+      </div>
+      <div class="mt-2 p-2 rounded-lg bg-slate-50 border text-[10px] text-slate-500 hidden" id="inv-ai-note">
+        <strong class="text-sky-700">AI Suggestion:</strong> ตรวจพบรายการ "maintenance" อาจควรใช้รหัส 5230-Repair แทน 5110-Material — โปรดตรวจสอบ
+      </div>
+    </div>
+  </div>
+  <div class="flex justify-between">
+    <button class="btn btn-ghost" onclick="goTo(3)">← AI Matching</button>
+    <button class="btn btn-sky" id="btn-to5" disabled onclick="goTo(5)">ไปขั้นตอนที่ 5: ส่งข้อมูล →</button>
+  </div>
+</section>
+
+<!-- ===================== STEP 5: SUBMIT ===================== -->
+<section id="s5" class="hidden space-y-4">
+  <div class="grid lg:grid-cols-3 gap-4">
+    <!-- Config -->
+    <div class="card p-5 text-[11px]">
+      <h2 class="font-semibold text-sm mb-3">ตั้งค่าชุดการบันทึก (Posting Batch)</h2>
+      <div class="space-y-3">
+        <div><label class="block font-medium text-slate-600 mb-1">ชื่อชุดการบันทึก</label>
+          <input type="text" id="batch-name" value="AI-OCR-INV-2025-04-09" style="width:100%"></div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block font-medium text-slate-600 mb-1">วันที่ลงบัญชี</label>
+            <input type="date" id="post-date" value="2025-04-09" style="width:100%"></div>
+          <div><label class="block font-medium text-slate-600 mb-1">วันที่เอกสาร</label>
+            <input type="date" id="doc-date" value="2025-04-09" style="width:100%"></div>
+        </div>
+        <div><label class="block font-medium text-slate-600 mb-1">ระบบปลายทาง</label>
+          <select id="erp-target" style="width:100%" onchange="updateTargetDesc()">
+            <option value="sap-stock">SAP – Account Payable / Stock in Material</option>
+            <option value="sap-gp">SAP – GP (Post AP / Expense)</option>
+            <option value="sap-tx">SAP – Transaction (via IFIN interface)</option>
+            <option value="csv">Export Excel/CSV (Stock in Material)</option>
+          </select>
+        </div>
+        <div class="p-2 rounded-lg text-[11px]" id="target-desc" style="background:#f0f9ff;border:1px solid #bae6fd;color:#0369a1">
+          📦 Stock in Material: ระบบจะสร้างไฟล์ Excel/CSV ที่มี mapped fields พร้อม upload เข้า SAP AP/Stock
+        </div>
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">โหมดการส่ง</label>
+          <div class="flex gap-4 mt-1">
+            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="pmode" value="test" id="mode-test" checked> ทดสอบ (Test run)</label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="pmode" value="real" id="mode-real"> บันทึกจริง (Real posting)</label>
+          </div>
+        </div>
+        <div><label class="block font-medium text-slate-600 mb-1">จัดการข้อผิดพลาด</label>
+          <select style="width:100%">
+            <option>หยุดเมื่อพบข้อผิดพลาดครั้งแรก</option>
+            <option>ข้ามเอกสารที่ผิด บันทึกเฉพาะที่ถูกต้อง</option>
+          </select></div>
+      </div>
+    </div>
+
+    <!-- Documents -->
+    <div class="card p-5 flex flex-col">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-semibold text-sm">เอกสารที่พร้อมส่ง</h2>
+        <span class="text-[10px] text-slate-500">2 ฉบับ · 13,375.00 THB</span>
+      </div>
+      <div class="overflow-hidden rounded-xl border flex-1">
+        <table class="w-full text-[11px]">
+          <thead class="bg-slate-50"><tr>
+            <th class="p-2"><input type="checkbox" checked id="chk-all" onchange="document.querySelectorAll('.sub-chk').forEach(c=>c.checked=this.checked)"></th>
+            <th class="p-2 text-left text-slate-500 font-medium">เลขที่</th>
+            <th class="p-2 text-left text-slate-500 font-medium">ผู้ขาย</th>
+            <th class="p-2 text-left text-slate-500 font-medium">ยอด</th>
+            <th class="p-2 text-left text-slate-500 font-medium">VAT</th>
+            <th class="p-2 text-left text-slate-500 font-medium">สถานะ</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="p-2"><input type="checkbox" class="sub-chk" checked></td>
+              <td class="p-2 mono text-[10px]">INV-00018</td>
+              <td class="p-2">Logistics</td>
+              <td class="p-2">10,700.00</td>
+              <td class="p-2">700.00</td>
+              <td class="p-2"><span class="badge" style="border-color:#bbf7d0;background:#f0fdf4;color:#059669">พร้อมส่ง</span></td>
+            </tr>
+            <tr>
+              <td class="p-2"><input type="checkbox" class="sub-chk" checked></td>
+              <td class="p-2 mono text-[10px]">INV-00019</td>
+              <td class="p-2">Office Supply</td>
+              <td class="p-2">2,675.00</td>
+              <td class="p-2">175.00</td>
+              <td class="p-2"><span class="badge" style="border-color:#bbf7d0;background:#f0fdf4;color:#059669">พร้อมส่ง</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-3 space-y-2">
+        <button class="btn btn-ghost w-full text-[11px]" onclick="runValidate()"><span class="ms ms-sm">fact_check</span> Validate (ทดสอบโดยไม่บันทึก)</button>
+        <button class="btn btn-ghost w-full text-[11px]" id="btn-csv" onclick="exportCSV()" style="border-color:#bae6fd;color:#0369a1"><span class="ms ms-sm">file_download</span> Export Excel/CSV (Stock in Material)</button>
+        <button class="btn btn-emerald w-full text-[11px]" id="btn-submit" onclick="submitBatch()"><span class="ms ms-sm">rocket_launch</span> Post AP in SAP (GP / Transaction)</button>
+      </div>
+    </div>
+
+    <!-- Log & Response -->
+    <div class="card p-5 flex flex-col">
+      <h2 class="font-semibold text-sm mb-2">สถานะและ Log</h2>
+      <div class="p-3 rounded-xl border mb-3" id="batch-status">
+        <div class="text-[10px] text-slate-500">สถานะ Batch</div>
+        <div class="font-semibold text-sm mt-0.5" id="bs-label">พร้อมส่งข้อมูล</div>
+        <div class="text-[10px] text-slate-500 mt-0.5" id="bs-desc">เลือกโหมดและกด Submit</div>
+      </div>
+      <div class="text-[10px] font-semibold text-slate-500 mb-1">Activity Log</div>
+      <div class="terminal h-32 overflow-auto mb-2" id="erp-log"><div style="color:#475569"># รอการส่งข้อมูล...</div></div>
+      <div class="text-[10px] font-semibold text-slate-500 mb-1">ERP Response</div>
+      <div class="terminal h-28 overflow-auto" id="erp-resp"><div style="color:#475569"># รอ response...</div></div>
+    </div>
+  </div>
+  <div class="flex justify-between">
+    <button class="btn btn-ghost" onclick="goTo(4)">← ตรวจสอบ</button>
+    <button class="btn btn-sky" id="btn-to6" disabled onclick="goTo(6)">เสร็จสิ้นกระบวนการ →</button>
+  </div>
+</section>
+
+<!-- ===================== STEP 6: DONE ===================== -->
+<section id="s6" class="hidden">
+  <div class="card p-10 flex flex-col items-center text-center">
+    <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mb-4"><span class="ms ms-xl text-emerald-600 ms-fill" style="font-size:42px">task_alt</span></div>
+    <h2 class="text-2xl font-semibold mb-2">ดำเนินการเรียบร้อยแล้ว</h2>
+    <p class="text-sm text-slate-500 max-w-xl">ระบบบันทึกใบแจ้งหนี้และส่งข้อมูลเข้าระบบเรียบร้อย ตรวจสอบรายละเอียดในระบบต้นทางหรือดาวน์โหลด Integration Log</p>
+    <div class="mt-8 grid md:grid-cols-4 gap-4 w-full max-w-3xl">
+      <div class="p-4 rounded-2xl border bg-slate-50">
+        <div class="text-xs text-slate-500 mb-1">ใบแจ้งหนี้ที่บันทึก</div>
+        <div class="text-2xl font-bold text-slate-900">2</div>
+      </div>
+      <div class="p-4 rounded-2xl border bg-slate-50">
+        <div class="text-xs text-slate-500 mb-1">ยอดรวมสุทธิ</div>
+        <div class="text-xl font-bold text-slate-900">13,375 <span class="text-sm font-normal">THB</span></div>
+      </div>
+      <div class="p-4 rounded-2xl border bg-slate-50">
+        <div class="text-xs text-slate-500 mb-1">Batch ID</div>
+        <div class="text-base font-bold mono" id="done-bid">—</div>
+      </div>
+      <div class="p-4 rounded-2xl border bg-slate-50">
+        <div class="text-xs text-slate-500 mb-1">เวลาบันทึก</div>
+        <div class="text-sm font-semibold" id="done-ts">—</div>
+      </div>
+    </div>
+    <div class="w-full max-w-3xl mt-4">
+      <div class="terminal text-left p-4 max-h-40 overflow-auto" id="done-log"></div>
+    </div>
+    <div class="mt-6 flex flex-wrap gap-3 justify-center">
+      <button class="btn btn-ghost" onclick="downloadLog()"><span class="ms ms-sm">download</span> ดาวน์โหลด Log</button>
+      <button class="btn btn-ghost" onclick="alert('จำลอง: เปิดระบบ ERP\nBatch: '+batchId)"><span class="ms ms-sm">open_in_new</span> เปิดระบบ ERP</button>
+      <button class="btn btn-sky" onclick="newBatch()"><span class="ms ms-sm">add</span> เริ่มชุดใหม่</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ===========================
+//  DATA
+// ===========================
+const INVS = [
+  { id:'INV-2025-00018', vendor:'Logistics Partner Ltd.', date:'2025-04-05', total:'10,700.00', vat:'700.00', net:'10,000.00', acc:'5110-Material', cc:'WH-A01', score:'94%', status:'pending',
+    lines:[{d:'Inbound AG-DOCS handling charge',a:'5110-Material',cc:'WH-A01',amt:'7,000.00'},{d:'Fuel surcharge',a:'5110-Material',cc:'WH-A01',amt:'3,000.00'}] },
+  { id:'INV-2025-00019', vendor:'Office Supply Co.', date:'2025-04-05', total:'2,675.00', vat:'175.00', net:'2,500.00', acc:'5210-Office', cc:'HQ-ADM', score:'88%', status:'approved',
+    lines:[{d:'A4 Paper 80gsm (5 reams)',a:'5210-Office',cc:'HQ-ADM',amt:'750.00'},{d:'Printer toner cartridge (HP 12A)',a:'5210-Office',cc:'HQ-ADM',amt:'1,750.00'}] },
+  { id:'INV-2025-00020', vendor:'Thai Service Ltd.', date:'2025-04-06', total:'4,280.00', vat:'280.00', net:'4,000.00', acc:'5230-Repair', cc:'OPS-01', score:'68%', status:'pending',
+    lines:[{d:'Forklift periodic maintenance service',a:'5230-Repair',cc:'OPS-01',amt:'4,000.00'}] }
+];
+
+const RULES = [
+  { id:1, pat:"ชื่อผู้ขายมีคำว่า 'Logistics' AND ประเภท = วัสดุ", acc:'5110-Material', cc:'WH-A01', tax:'VAT 7%', conf:92,
+    match: (v,t,k)=> v.toLowerCase().includes('logistics') && t==='material' },
+  { id:2, pat:"ชื่อผู้ขาย = 'Office Supply Co.' AND ประเภท = จัดซื้อ (มี PO)", acc:'5210-Office', cc:'HQ-ADM', tax:'VAT 7%', conf:88,
+    match: (v,t,k)=> v.toLowerCase().includes('office supply') && t==='po' },
+  { id:3, pat:"คำสำคัญมีคำว่า 'repair' หรือ 'maintenance'", acc:'5230-Repair', cc:'OPS-01', tax:'VAT 7%', conf:85,
+    match: (v,t,k)=> ['repair','maintenance'].some(w=>k.toLowerCase().includes(w)) },
+  { id:4, pat:"ประเภท = จัดซื้อทั่วไป (มี PO) — กฎสำรอง", acc:'5220-Purchase', cc:'HQ-ADM', tax:'VAT 7%', conf:80,
+    match: (v,t,k)=> t==='po' },
+];
+
+const OCR_FIELDS = [
+  {f:'ชื่อผู้ขาย (Vendor)',v:'Logistics Partner Ltd.',c:95},
+  {f:'เลขที่ใบแจ้งหนี้',v:'INV-2025-00018',c:98},
+  {f:'วันที่ใบแจ้งหนี้',v:'05/04/2025',c:82},
+  {f:'เลขประจำตัวผู้เสียภาษี',v:'0105556123456',c:91},
+  {f:'ยอดก่อน VAT',v:'10,000.00 THB',c:93},
+  {f:'ภาษีมูลค่าเพิ่ม (VAT 7%)',v:'700.00 THB',c:97},
+  {f:'ยอดรวมสุทธิ',v:'10,700.00 THB',c:90},
+  {f:'เลขที่ใบสั่งซื้อ (PO)',v:'PO-2025-1188',c:78},
+  {f:'เงื่อนไขการชำระ',v:'Net 30 วัน',c:85},
+];
+
+const RAW_TEXT = `Invoice INV-2025-00018
+Vendor: Logistics Partner Ltd.
+Tax ID: 0105556123456
+Date: 05/04/2025  Due: 05/05/2025
+Item 1: Inbound AG-DOCS handling  7,000.00
+Item 2: Fuel surcharge              3,000.00
+Subtotal:                          10,000.00
+VAT 7%:                               700.00
+Total:                             10,700.00 THB
+PO Ref: PO-2025-1188  Payment: Net 30 days`;
+
+// ===========================
+//  STATE
+// ===========================
+let curStep = 1;
+let selInv = null;
+let batchId = null;
+let logLines = [];
+let ocr2Done = false;
+let submitDone = false;
+
+// ===========================
+//  NAVIGATION
+// ===========================
+const SUBS = {1:'อัปโหลดและจัดประเภทเอกสาร',2:'OCR ดึงข้อมูลจากใบแจ้งหนี้',3:'กำหนดกฎการแมปบัญชีอัตโนมัติ',4:'ตรวจสอบรหัสบัญชีและอนุมัติ',5:'ส่งข้อมูลเข้าระบบและตรวจสอบผล',6:'ดำเนินการเรียบร้อยแล้ว'};
+
+function goTo(n){
+  for(let i=1;i<=6;i++) document.getElementById('s'+i)?.classList[i===n?'remove':'add']('hidden');
+  document.querySelectorAll('.step-card').forEach(c=>{
+    const s=+c.dataset.s, dot=c.querySelector('.step-dot');
+    c.classList.remove('s-active','s-done');
+    dot.style.cssText='background:#e2e8f0;color:#64748b';
+    if(s<n){c.classList.add('s-done');dot.style.cssText='background:#059669;color:white'}
+    if(s===n){c.classList.add('s-active');dot.style.cssText='background:#0ea5e9;color:white'}
+  });
+  document.getElementById('hdr-sub').textContent=SUBS[n]||'';
+  curStep=n;
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===2) initS2();
+  if(n===3) initS3();
+  if(n===4) initS4();
+  if(n===6) initS6();
+}
+
+document.querySelectorAll('.step-card').forEach(c=>c.addEventListener('click',()=>goTo(+c.dataset.s)));
+
+// ===========================
+//  PROCESS TYPE
+// ===========================
+let currentProc = 'stock';
+const PROC_DESCS = {
+  stock: '📦 <strong>Stock in Material:</strong> OCR → AI Match → Export Excel/CSV → Upload SAP Account Payable / Stock',
+  gp:    '💼 <strong>GP:</strong> OCR → AI Match & Flag Mismatches → Post AP / Expense in SAP (แทน EPS interface)',
+  tx:    '💳 <strong>Transaction:</strong> OCR → AI Match & Flag Mismatches → Post AP in SAP (แทน manual copy จาก IFIN)'
+};
+const PROC_OUTPUT = {
+  stock: '📦 Stock in Material: Export Excel/CSV → Upload SAP AP/Stock',
+  gp:    '💼 GP: Direct Post AP in SAP (แทน Manual post + EPS)',
+  tx:    '💳 Transaction: Direct Post AP in SAP (แทน Manual copy จาก IFIN)'
+};
+function setProc(type, btn) {
+  currentProc = type;
+  document.querySelectorAll('.proc-btn').forEach(b => {
+    b.className = 'proc-btn p-2 rounded-lg border text-center text-[11px] transition-all border-slate-200 bg-white text-slate-600 hover:border-sky-300';
+  });
+  btn.className = 'proc-btn p-2 rounded-lg border text-center text-[11px] transition-all border-sky-400 bg-sky-50 text-sky-700 font-semibold';
+  document.getElementById('proc-desc').innerHTML = PROC_DESCS[type];
+  const oi = document.getElementById('proc-output-info');
+  if(oi) oi.innerHTML = PROC_OUTPUT[type];
+}
+function updateTargetDesc() {
+  const el = document.getElementById('target-desc');
+  if(!el) return;
+  const v = document.getElementById('erp-target')?.value;
+  const msgs = {
+    'sap-stock':'📦 Stock in Material: ระบบจะสร้างไฟล์ Excel/CSV ที่มี mapped fields พร้อม upload เข้า SAP AP/Stock',
+    'sap-gp':  '💼 GP: Post AP / Expense ตรง SAP — แทนการ post manual ผ่าน EPS interface',
+    'sap-tx':  '💳 Transaction: Post AP ตรง SAP — แทนการ copy จาก IFIN และ enter code ทีละรายการ',
+    'csv':     '📊 Export Excel/CSV — สำหรับ Stock in Material ที่ต้องการ upload file เข้า SAP'
+  };
+  el.textContent = msgs[v]||'';
+}
+function exportCSV() {
+  const approved = INVS.filter(i=>i.status==='approved');
+  if(!approved.length){ alert('ไม่มีรายการที่อนุมัติแล้ว'); return; }
+  const logEl2 = document.getElementById('erp-log');
+  logEl2.innerHTML = '';
+  const ts = new Date().toLocaleTimeString('th-TH');
+  const app=(t,c='i')=>{ const d=document.createElement('div');d.className=c;d.textContent=t;logEl2.appendChild(d);logEl2.scrollTop=logEl2.scrollHeight; };
+  app(`[${ts}] กำลังสร้างไฟล์ Excel/CSV สำหรับ Stock in Material...`,'ts');
+  setTimeout(()=>app('  → Mapping fields: Invoice No, Vendor, Amount, VAT, PO, GL Code...','i'),400);
+  setTimeout(()=>app('  ✓ Mapped '+approved.length+' รายการ','e'),900);
+  setTimeout(()=>app('  → Generating CSV with SAP upload format...','i'),1200);
+  setTimeout(()=>{
+    app('  ✓ ไฟล์พร้อม: AP_Stock_'+new Date().toISOString().slice(0,10)+'.csv','e');
+    app('\n✓ Export เสร็จสิ้น — พร้อม Upload ไปยัง SAP Account Payable / Stock in Material','ts');
+    document.getElementById('batch-status').style.borderColor='#bbf7d0';
+    document.getElementById('batch-status').style.background='#f0fdf4';
+    document.getElementById('bs-label').textContent='✓ สร้างไฟล์ CSV เรียบร้อย';
+    document.getElementById('bs-desc').textContent='พร้อม Upload เข้า SAP Stock in Material';
+    document.getElementById('btn-to6').disabled=false;
+  },1800);
+}
+
+// ===========================
+//  AI MATCHING
+// ===========================
+const MATCH_DATA = [
+  { id:'INV-2025-00018', vendor:'Logistics Partner Ltd.', po:'PO-2025-0041', poMatch:true,  amount:10700, variance:0,    gl:'5110-Material', cc:'WH-A01',  score:94, decision:'AUTO_POST',
+    reason:'[AI Matching] Invoice vs PO-2025-0041: ยอดเงินตรงกัน 100% (฿10,700) · Vendor "Logistics Partner Ltd." match กับ SAP Master 97% · GR-2025-0089 confirm receipt ครบ · GL 5110-Material confidence 94% จาก keyword "วัสดุ, logistics" · Decision: AUTO POST' },
+  { id:'INV-2025-00019', vendor:'Office Supply Co.',      po:'PO-2025-0039', poMatch:true,  amount:2675,  variance:0,    gl:'5210-Office',  cc:'HQ-ADM',  score:88, decision:'REVIEW',
+    reason:'[AI Matching] Invoice vs PO-2025-0039: ยอดเงินตรงกัน · Vendor match 88% (ชื่อใน invoice "Office Supply Co." vs SAP "Office Supplies Company Ltd.") — fuzzy match ใกล้เคียงแต่ไม่ตรงทั้งหมด · แนะนำ review vendor name ก่อน post · GL 5210-Office confidence 91%' },
+  { id:'INV-2025-00020', vendor:'Thai Service Ltd.',      po:'ไม่พบ PO',     poMatch:false, amount:4280,  variance:4280, gl:'5230-Repair',  cc:'OPS-01',  score:62, decision:'EXCEPTION',
+    reason:'[AI Matching] ⚠ ไม่พบ PO ที่ match กับ Invoice นี้ · ยอด ฿4,280 ไม่มีใน PO master · Vendor "Thai Service Ltd." พบใน SAP แต่ category เป็น "Service" ไม่ใช่ "Material" · GL แนะนำ 5230-Repair (confidence 62%) — ต่ำกว่าเกณฑ์ 70% · Action: EXCEPTION — กรุณา escalate ให้ Acc Staff ตรวจสอบ PO และ GL code' },
+];
+
+function renderMatchTable() {
+  const tbl = document.getElementById('match-tbl');
+  if(!tbl) return;
+  let auto=0, rev=0, exc=0;
+  tbl.innerHTML = MATCH_DATA.map(m => {
+    let badge, color;
+    if(m.decision==='AUTO_POST'){ badge='✓ Auto Post'; color='border-color:#bbf7d0;background:#f0fdf4;color:#059669'; auto++; }
+    else if(m.decision==='REVIEW'){ badge='⚠ Review'; color='border-color:#fed7aa;background:#fffbeb;color:#b45309'; rev++; }
+    else { badge='✕ Exception'; color='border-color:#fecaca;background:#fef2f2;color:#dc2626'; exc++; }
+    const poColor = m.poMatch ? 'color:#059669' : 'color:#dc2626';
+    return `<tr class="ocr-row" onclick="showMatchDetail('${m.id}')">
+      <td class="p-2 mono text-[10px]">${m.id}</td>
+      <td class="p-2">${m.vendor}</td>
+      <td class="p-2 mono text-[10px]" style="${poColor}">${m.po}</td>
+      <td class="p-2">${m.amount.toLocaleString()}</td>
+      <td class="p-2 mono text-sky-700 font-medium">${m.gl}</td>
+      <td class="p-2 text-center"><span class="badge" style="${color}">${m.score}%</span></td>
+      <td class="p-2"><span class="badge" style="${color}">${badge}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('m-auto').textContent = auto;
+  document.getElementById('m-review').textContent = rev;
+  document.getElementById('m-except').textContent = exc;
+}
+
+function showMatchDetail(id) {
+  const m = MATCH_DATA.find(x=>x.id===id);
+  if(!m) return;
+  document.querySelectorAll('.ocr-row').forEach(r=>r.classList.remove('hl'));
+  document.querySelectorAll('.ocr-row').forEach(r=>{ if(r.querySelector('td')?.textContent===id) r.classList.add('hl'); });
+  const reasonEl = document.getElementById('match-reason');
+  reasonEl.innerHTML = `<div style="color:#34d399">${m.reason}</div>`;
+  const detailEl = document.getElementById('match-detail');
+  const scoreColor = m.score>=90?'#059669':m.score>=60?'#b45309':'#dc2626';
+  const scoreBg = m.score>=90?'#f0fdf4':m.score>=60?'#fffbeb':'#fef2f2';
+  detailEl.innerHTML = `
+    <div class="space-y-2 text-[11px]">
+      <div class="p-2 rounded-lg border bg-slate-50">
+        <div class="text-[10px] text-slate-400">Invoice No.</div>
+        <div class="font-semibold mono">${m.id}</div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">Vendor</div>
+          <div class="font-medium text-[11px]">${m.vendor}</div>
+        </div>
+        <div class="p-2 rounded-lg border" style="background:${scoreBg}">
+          <div class="text-[10px] text-slate-400">Match Score</div>
+          <div class="font-bold text-base" style="color:${scoreColor}">${m.score}%</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">PO Reference</div>
+          <div class="mono text-[10px] ${m.poMatch?'text-emerald-700':'text-rose-600'}">${m.po}</div>
+        </div>
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">Amount (THB)</div>
+          <div class="font-semibold">฿${m.amount.toLocaleString()}</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">GL แนะนำ</div>
+          <div class="mono text-sky-700 font-medium">${m.gl}</div>
+        </div>
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">Cost Center</div>
+          <div class="mono">${m.cc}</div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('ovr-gl').value = m.gl;
+  document.getElementById('ovr-cc').value = m.cc;
+}
+
+function applyOverride() {
+  const gl = document.getElementById('ovr-gl').value;
+  const cc = document.getElementById('ovr-cc').value;
+  alert(`บันทึกแล้ว: GL = ${gl}, CC = ${cc}`);
+}
+
+// ===========================
+//  STEP 1: 2-MODE UPLOAD (manual / bulk) + AI PROVIDER + COST ESTIMATE
+// ===========================
+const MAX_FILES = 100;
+let uploadMode = 'manual';             // 'manual' | 'bulk'
+let uploadSlots = [];                  // [{ typeCode, file }] — shared by both modes
+let docTypes = [];                     // from /api/document-types
+let aiProviders = [];                  // from /api/ai/providers
+let aiCfg = null;                      // from /api/ai/config
+let costSettings = null;               // from /api/cost-settings
+let selectedProviderId = null;         // user pick (radio)
+let bulkDropzoneInit = false;
+
+async function initStep1() {
+  if (!currentUser) return;
+  try {
+    const [dtR, prR, cfR, csR] = await Promise.all([
+      api('/api/document-types'),
+      api('/api/ai/providers').catch(() => null),    // demo can't read this — handled below
+      api('/api/ai/config').catch(() => null),
+      api('/api/cost-settings'),
+    ]);
+
+    docTypes = dtR.ok ? (await dtR.json()).types : [];
+    costSettings = csR.ok ? await csR.json() : null;
+
+    // For demo (no admin perms on /api/ai/*), build providers list from cost-settings.effectiveCosts
+    if (prR && prR.ok) {
+      aiProviders = (await prR.json()).providers;
+      aiCfg = cfR && cfR.ok ? await cfR.json() : null;
+    } else if (costSettings) {
+      aiProviders = Object.entries(costSettings.effectiveCosts).map(([id, c]) => ({
+        id, displayName: id, vendor: 'unknown', tier: 'standard',
+        inputCostPer1k: c.inputCostPer1k, outputCostPer1k: c.outputCostPer1k,
+        description: '', supportsPdf: true,
+      }));
+      aiCfg = null;
+    }
+
+    selectedProviderId = aiCfg?.ocrProviderId
+      ?? (aiProviders[0]?.id ?? null);
+
+    // ensure at least one slot exists for manual mode
+    if (uploadSlots.length === 0) {
+      uploadSlots = [{ typeCode: docTypes[0]?.code ?? '', file: null }];
+    }
+
+    // populate bulk type select
+    const bulkSel = document.getElementById('bulk-type-select');
+    if (bulkSel) {
+      bulkSel.innerHTML = docTypes.map(t =>
+        `<option value="${t.code}">${escapeHtml(t.name)}</option>`).join('');
+    }
+
+    setupBulkDropzone();
+    setUploadMode(uploadMode);  // also calls renderUploadUI
+    renderAiProviderRadios();
+    renderCostBreakdown();
+  } catch (e) {
+    console.error('initStep1 failed', e);
+  }
+}
+
+// ----- Mode toggle (radio-driven) -----
+function setUploadMode(mode) {
+  uploadMode = (mode === 'bulk') ? 'bulk' : 'manual';
+
+  document.getElementById('upload-mode-manual')?.classList.toggle('hidden', uploadMode !== 'manual');
+  document.getElementById('upload-mode-bulk')?.classList.toggle('hidden', uploadMode !== 'bulk');
+
+  // sync radio state (in case called programmatically)
+  document.querySelectorAll('input[name="upload-mode"]').forEach(r => {
+    r.checked = (r.value === uploadMode);
+  });
+
+  // When entering bulk mode, force all slots to share the bulk-selected type
+  if (uploadMode === 'bulk') {
+    const bulkSel = document.getElementById('bulk-type-select');
+    const t = bulkSel?.value || docTypes[0]?.code || '';
+    uploadSlots.forEach(s => { s.typeCode = t; });
+    syncCurrentProcFromSlots();
+  }
+
+  renderUploadUI();
+}
+
+function renderUploadUI() {
+  if (uploadMode === 'manual') {
+    renderManualRows();
+  } else {
+    renderBulkFileList();
+  }
+  updateUploadSummary();
+}
+
+// ----- Manual mode (mixed types, one row per file) -----
+function renderManualRows() {
+  const wrap = document.getElementById('manual-rows');
+  if (!wrap) return;
+
+  // Make sure there's always at least one row
+  if (uploadSlots.length === 0) {
+    uploadSlots.push({ typeCode: docTypes[0]?.code ?? '', file: null });
+  }
+
+  wrap.innerHTML = uploadSlots.map((slot, idx) => {
+    const dtOptions = docTypes.map(t =>
+      `<option value="${t.code}" ${t.code === slot.typeCode ? 'selected' : ''}>${escapeHtml(t.name)}</option>`
+    ).join('');
+    const fileBlock = slot.file ? `
+      <div class="flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200">
+        <span class="ms ms-sm text-emerald-600 flex-shrink-0">description</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-[11px] font-medium text-slate-700 truncate">${escapeHtml(slot.file.name)}</div>
+          <div class="text-[10px] text-slate-500">${formatBytes(slot.file.size)}</div>
+        </div>
+      </div>
+    ` : `
+      <label class="flex items-center gap-1.5 flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-dashed border-slate-300 cursor-pointer hover:border-sky-400 hover:bg-sky-50 transition-all">
+        <span class="ms ms-sm text-slate-400">attach_file</span>
+        <span class="text-[10px] text-slate-400">เลือกไฟล์</span>
+        <input type="file" class="hidden" accept="image/png,image/jpeg,image/webp,application/pdf"
+               onchange="setSlotFile(${idx}, this.files[0])">
+      </label>
+    `;
+    return `
+      <div class="flex items-center gap-2 p-2 rounded-lg border bg-white">
+        <span class="w-6 h-6 rounded-full bg-sky-500 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">${idx + 1}</span>
+        <select class="text-[10px] flex-shrink-0" style="width:140px" onchange="setSlotType(${idx}, this.value)" ${docTypes.length === 0 ? 'disabled' : ''}>
+          ${docTypes.length === 0 ? '<option>(ไม่มีประเภท)</option>' : dtOptions}
+        </select>
+        ${fileBlock}
+        <button onclick="removeManualRow(${idx})" class="text-rose-500 hover:text-rose-600 flex-shrink-0 p-1" title="ลบรายการ">
+          <span class="ms ms-sm">close</span>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('manual-count').textContent = `${uploadSlots.length} ไฟล์`;
+}
+
+function addManualRow() {
+  if (uploadSlots.length >= MAX_FILES) {
+    alert(`ไม่เกิน ${MAX_FILES} รายการต่อ batch`);
+    return;
+  }
+  uploadSlots.push({ typeCode: docTypes[0]?.code ?? '', file: null });
+  renderManualRows();
+  updateUploadSummary();
+  renderCostBreakdown();
+}
+
+function removeManualRow(idx) {
+  uploadSlots.splice(idx, 1);
+  if (uploadSlots.length === 0) {
+    uploadSlots.push({ typeCode: docTypes[0]?.code ?? '', file: null });
+  }
+  renderManualRows();
+  updateUploadSummary();
+  renderCostBreakdown();
+}
+
+// ----- Bulk mode (single type for whole batch, drop many files) -----
+function renderBulkFileList() {
+  const wrap = document.getElementById('bulk-file-list');
+  if (!wrap) return;
+  const filled = uploadSlots.filter(s => s.file);
+  if (filled.length === 0) {
+    wrap.innerHTML = '<div class="text-[11px] text-slate-300 italic text-center py-3 border border-dashed border-slate-200 rounded-lg">ยังไม่มีไฟล์ — ลากไฟล์มาที่ drop zone ด้านบน</div>';
+    document.getElementById('bulk-count').textContent = '0 ไฟล์';
+    return;
+  }
+  wrap.innerHTML = filled.map((slot, displayIdx) => {
+    const realIdx = uploadSlots.indexOf(slot);
+    return `
+      <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg border bg-emerald-50 border-emerald-200">
+        <span class="w-5 h-5 rounded-full bg-sky-500 text-white text-[9px] font-bold flex items-center justify-center flex-shrink-0">${displayIdx + 1}</span>
+        <span class="ms ms-sm text-emerald-600 flex-shrink-0">description</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-[11px] font-medium text-slate-700 truncate">${escapeHtml(slot.file.name)}</div>
+          <div class="text-[10px] text-slate-500">${formatBytes(slot.file.size)}</div>
+        </div>
+        <button onclick="removeBulkFile(${realIdx})" class="text-rose-500 hover:text-rose-600 flex-shrink-0 p-1" title="ลบไฟล์">
+          <span class="ms ms-sm">close</span>
+        </button>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('bulk-count').textContent = `${filled.length} ไฟล์`;
+}
+
+function setBulkType(typeCode) {
+  uploadSlots.forEach(s => { s.typeCode = typeCode; });
+  syncCurrentProcFromSlots();
+  renderCostBreakdown();
+}
+
+function setBulkFiles(filesList) {
+  if (!filesList || filesList.length === 0) return;
+  const files = Array.from(filesList);
+  const bulkSel = document.getElementById('bulk-type-select');
+  const bulkType = bulkSel?.value || docTypes[0]?.code || '';
+
+  for (const f of files) {
+    if (uploadSlots.filter(s => s.file).length >= MAX_FILES) {
+      alert(`ไม่เกิน ${MAX_FILES} ไฟล์ต่อ batch`);
+      break;
+    }
+    if (f.size > 20 * 1024 * 1024) {
+      alert(`ไฟล์ "${f.name}" เกิน 20 MB — ข้าม`);
+      continue;
+    }
+    // First fill any empty placeholder slots, otherwise append
+    const empty = uploadSlots.findIndex(s => !s.file);
+    if (empty >= 0) {
+      uploadSlots[empty].file = f;
+      uploadSlots[empty].typeCode = bulkType;
+    } else {
+      uploadSlots.push({ typeCode: bulkType, file: f });
+    }
+  }
+  syncCurrentProcFromSlots();
+  renderUploadUI();
+  renderCostBreakdown();
+}
+
+function removeBulkFile(idx) {
+  if (uploadSlots[idx]) uploadSlots.splice(idx, 1);
+  // ensure invariant: at least one (empty) slot in state for manual mode compatibility
+  if (uploadSlots.length === 0) {
+    uploadSlots.push({ typeCode: document.getElementById('bulk-type-select')?.value || docTypes[0]?.code || '', file: null });
+  }
+  renderUploadUI();
+  renderCostBreakdown();
+}
+
+function setupBulkDropzone() {
+  if (bulkDropzoneInit) return;
+  const zone = document.getElementById('bulk-dropzone');
+  if (!zone) return;
+  bulkDropzoneInit = true;
+
+  ['dragenter', 'dragover'].forEach(ev => {
+    zone.addEventListener(ev, e => {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.add('border-sky-500');
+      zone.style.background = '#f0f9ff';
+    });
+  });
+  ['dragleave', 'drop'].forEach(ev => {
+    zone.addEventListener(ev, e => {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.remove('border-sky-500');
+      zone.style.background = '';
+    });
+  });
+  zone.addEventListener('drop', e => {
+    if (e.dataTransfer?.files?.length) setBulkFiles(e.dataTransfer.files);
+  });
+}
+
+function syncCurrentProcFromSlots() {
+  // Keep legacy `currentProc` in sync with the first slot's type, so Step 3/5
+  // text that uses PROC_OUTPUT[currentProc] still resolves.
+  const code = uploadSlots[0]?.typeCode;
+  if (code && (code === 'stock' || code === 'gp' || code === 'tx')) {
+    currentProc = code;
+  }
+}
+
+function renderSlots() {
+  const wrap = document.getElementById('upload-slots');
+  if (!wrap) return;
+
+  // Decide what to render: when there are many slots, hide most empty ones to keep the list short
+  const compact = uploadSlots.length > 10;
+  let entries = uploadSlots.map((s, i) => ({ s, i }));
+  let hiddenEmptyCount = 0;
+  if (compact) {
+    const filled = entries.filter(x => x.s.file);
+    const empties = entries.filter(x => !x.s.file);
+    const shownEmpties = empties.slice(0, 3);
+    hiddenEmptyCount = empties.length - shownEmpties.length;
+    entries = [...filled, ...shownEmpties].sort((a, b) => a.i - b.i);
+  }
+
+  wrap.innerHTML = entries.map(({ s: slot, i: idx }) => {
+    const dtOptions = docTypes.map(t =>
+      `<option value="${t.code}" ${t.code === slot.typeCode ? 'selected' : ''}>${escapeHtml(t.name)}</option>`
+    ).join('');
+    const fileBlock = slot.file ? `
+      <div class="flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200">
+        <span class="ms ms-sm text-emerald-600 flex-shrink-0">description</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-[11px] font-medium text-slate-700 truncate">${escapeHtml(slot.file.name)}</div>
+          <div class="text-[10px] text-slate-500">${formatBytes(slot.file.size)}</div>
+        </div>
+        <button onclick="clearSlotFile(${idx})" class="text-rose-500 hover:text-rose-600 flex-shrink-0" title="ลบไฟล์">
+          <span class="ms ms-sm">close</span>
+        </button>
+      </div>
+    ` : `
+      <label class="flex items-center gap-1.5 flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-dashed border-slate-300 cursor-pointer hover:border-sky-400 hover:bg-sky-50 transition-all">
+        <span class="ms ms-sm text-slate-400">upload_file</span>
+        <span class="text-[10px] text-slate-400">เลือกไฟล์</span>
+        <input type="file" class="hidden" accept="image/png,image/jpeg,image/webp,application/pdf"
+               onchange="setSlotFile(${idx}, this.files[0])">
+      </label>
+    `;
+    return `
+      <div class="flex items-center gap-2 p-2 rounded-lg border bg-white">
+        <span class="w-6 h-6 rounded-full bg-sky-500 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">${idx + 1}</span>
+        <select class="text-[10px] flex-shrink-0" style="width:140px" onchange="setSlotType(${idx}, this.value)" ${docTypes.length === 0 ? 'disabled' : ''}>
+          ${docTypes.length === 0
+            ? '<option>(ไม่มีประเภท — เพิ่มจาก Settings)</option>'
+            : dtOptions}
+        </select>
+        ${fileBlock}
+      </div>
+    `;
+  }).join('');
+
+  if (compact && hiddenEmptyCount > 0) {
+    wrap.insertAdjacentHTML('beforeend', `
+      <div class="text-center text-[10px] text-slate-400 py-1 italic">
+        ... และอีก ${hiddenEmptyCount} slot ที่ว่าง — ลากไฟล์ใส่ drop zone ด้านบนเพื่อเติมอัตโนมัติ
+      </div>
+    `);
+  }
+
+  updateUploadSummary();
+}
+
+function setSlotType(idx, code) {
+  if (uploadSlots[idx]) uploadSlots[idx].typeCode = code;
+  syncCurrentProcFromSlots();
+  renderCostBreakdown();
+}
+
+function setSlotFile(idx, file) {
+  if (!file) return;
+  if (file.size > 20 * 1024 * 1024) {
+    alert('ไฟล์เกิน 20 MB');
+    return;
+  }
+  if (uploadSlots[idx]) uploadSlots[idx].file = file;
+  renderSlots();
+  renderCostBreakdown();
+}
+
+function clearSlotFile(idx) {
+  if (uploadSlots[idx]) uploadSlots[idx].file = null;
+  renderSlots();
+  renderCostBreakdown();
+}
+
+function updateUploadSummary() {
+  const filled = uploadSlots.filter(s => s.file).length;
+  const labelText = filled === 0
+    ? 'ยังไม่มีไฟล์'
+    : `${filled} ไฟล์พร้อมประมวลผล`;
+
+  // Sync ALL labels and buttons (top + bottom)
+  document.querySelectorAll('.ocr-go-label').forEach(el => {
+    el.textContent = labelText;
+  });
+  document.querySelectorAll('.ocr-go-btn').forEach(b => {
+    b.disabled = filled === 0;
+  });
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[<>&"']/g, c => ({
+    '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function formatBytes(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / 1024 / 1024).toFixed(2) + ' MB';
+}
+
+// ----- AI Provider radio -----
+function renderAiProviderRadios() {
+  const wrap = document.getElementById('ai-provider-radios');
+  if (!wrap) return;
+  if (aiProviders.length === 0) {
+    wrap.innerHTML = '<div class="text-[11px] text-slate-400 italic">ไม่พบ provider — ให้ admin ตั้งค่า</div>';
+    return;
+  }
+  wrap.innerHTML = aiProviders.map(p => {
+    const active = p.id === selectedProviderId;
+    const tierColor = p.tier === 'free'
+      ? 'background:#dbeafe;color:#1d4ed8'
+      : p.tier === 'standard'
+      ? 'background:#fef3c7;color:#b45309'
+      : 'background:#fce7f3;color:#9d174d';
+    const eff = costSettings?.effectiveCosts?.[p.id];
+    const inCost = eff ? eff.inputCostPer1k : p.inputCostPer1k;
+    const outCost = eff ? eff.outputCostPer1k : p.outputCostPer1k;
+    return `
+      <label class="flex items-start gap-2 p-3 rounded-lg border cursor-pointer transition-all ${active
+        ? 'border-sky-400 bg-sky-50'
+        : 'border-slate-200 bg-white hover:border-sky-300'}">
+        <input type="radio" name="ai-provider" value="${p.id}" ${active ? 'checked' : ''}
+               onchange="selectAiProvider('${p.id}')" class="mt-0.5">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="font-semibold text-[12px] text-slate-700 truncate">${escapeHtml(p.displayName)}</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="${tierColor}">${p.tier}</span>
+          </div>
+          <div class="text-[10px] text-slate-500 mt-0.5">${escapeHtml(p.description || '')}</div>
+          <div class="text-[10px] text-slate-400 mono mt-1">
+            ฿${inCost.toFixed(4)}/1k in · ฿${outCost.toFixed(4)}/1k out
+          </div>
+        </div>
+      </label>
+    `;
+  }).join('');
+}
+
+function selectAiProvider(id) {
+  selectedProviderId = id;
+  renderAiProviderRadios();
+  renderCostBreakdown();
+}
+
+// ----- Cost estimate (full breakdown: IN + OUT per stage, grand total) -----
+function renderCostBreakdown() {
+  const el = document.getElementById('cost-breakdown');
+  const src = document.getElementById('cost-source');
+  if (!el || !costSettings || !selectedProviderId) {
+    if (el) el.innerHTML = '<div class="text-[11px] text-slate-300 italic">รอข้อมูล...</div>';
+    return;
+  }
+  const filled = uploadSlots.filter(s => s.file).length;
+  if (filled === 0) {
+    el.innerHTML = '<div class="text-[11px] text-slate-300 italic">เพิ่มไฟล์เพื่อดูค่าประเมิน...</div>';
+    if (src) src.textContent = '';
+    return;
+  }
+
+  const cs = costSettings;
+  const ocrCost = cs.effectiveCosts[selectedProviderId];
+  const matchProviderId = cs.matchingProviderId || selectedProviderId;
+  const matchCost = cs.effectiveCosts[matchProviderId] ?? ocrCost;
+
+  const totalPages = filled * cs.pagesPerFile;
+
+  // ---- Stage 1: OCR ----
+  const ocrInTokens = totalPages * cs.ocrInputTokensPerPage;
+  const ocrOutTokens = totalPages * cs.ocrOutputTokensPerPage;
+  const ocrInThb = (ocrInTokens / 1000) * ocrCost.inputCostPer1k;
+  const ocrOutThb = (ocrOutTokens / 1000) * ocrCost.outputCostPer1k;
+  const ocrThb = ocrInThb + ocrOutThb;
+
+  // ---- Stage 2: AI Matching (text-only, per invoice) ----
+  const matchInTokens = filled * cs.matchingInputTokens;
+  const matchOutTokens = filled * cs.matchingOutputTokens;
+  const matchInThb = (matchInTokens / 1000) * matchCost.inputCostPer1k;
+  const matchOutThb = (matchOutTokens / 1000) * matchCost.outputCostPer1k;
+  const matchThb = matchInThb + matchOutThb;
+
+  // ---- Grand totals ----
+  const totalInTokens = ocrInTokens + matchInTokens;
+  const totalOutTokens = ocrOutTokens + matchOutTokens;
+  const totalThb = ocrThb + matchThb;
+
+  const ocrProviderName = aiProviders.find(p => p.id === selectedProviderId)?.displayName || selectedProviderId;
+  const matchProviderName = aiProviders.find(p => p.id === matchProviderId)?.displayName || matchProviderId;
+  const isFreeTier = selectedProviderId === 'gemini-2.0-flash' && filled <= 1500;
+
+  const stageCard = (stageNo, name, providerName, inTokens, outTokens, inCost, outCost, inThb, outThb, subtotal) => `
+    <div class="p-2 rounded-lg bg-white border border-slate-200">
+      <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="w-4 h-4 rounded-full bg-sky-500 text-white text-[9px] font-bold flex items-center justify-center flex-shrink-0">${stageNo}</span>
+          <div class="min-w-0">
+            <div class="font-semibold text-[10px] text-slate-700 leading-tight">${name}</div>
+            <div class="text-[9px] text-slate-500 truncate">${escapeHtml(providerName)}</div>
+          </div>
+        </div>
+        <div class="font-bold text-[11px] mono text-slate-900 flex-shrink-0">฿${subtotal.toFixed(2)}</div>
+      </div>
+      <div class="text-[9px] mono text-slate-500 space-y-0.5 pl-5">
+        <div class="flex justify-between"><span>IN ${formatTokens(inTokens)}</span><span class="text-slate-700">฿${inThb.toFixed(2)}</span></div>
+        <div class="flex justify-between"><span>OUT ${formatTokens(outTokens)}</span><span class="text-slate-700">฿${outThb.toFixed(2)}</span></div>
+      </div>
+    </div>
+  `;
+
+  el.innerHTML = `
+    <div class="space-y-2">
+      <!-- Header summary -->
+      <div class="text-[10px] text-slate-500 flex items-center justify-between p-1.5 rounded bg-slate-50 border border-slate-200">
+        <span><strong class="text-slate-700">${filled}</strong> ไฟล์ × ${cs.pagesPerFile} หน้า = <strong class="text-slate-700">${totalPages.toFixed(1)}</strong> หน้า</span>
+        <span class="text-[9px]">฿${cs.usdToThb.toFixed(2)}/USD</span>
+      </div>
+
+      <!-- Stage breakdown (stacked single column for narrow card) -->
+      ${stageCard(1, 'OCR', ocrProviderName, ocrInTokens, ocrOutTokens, ocrCost.inputCostPer1k, ocrCost.outputCostPer1k, ocrInThb, ocrOutThb, ocrThb)}
+      ${stageCard(2, 'AI Matching', matchProviderName, matchInTokens, matchOutTokens, matchCost.inputCostPer1k, matchCost.outputCostPer1k, matchInThb, matchOutThb, matchThb)}
+
+      <!-- Grand total -->
+      <div class="p-2.5 rounded-lg" style="background:linear-gradient(135deg,#0ea5e9,#0369a1);color:white">
+        <div class="flex justify-between items-center text-[10px] mb-1">
+          <span class="opacity-80">Total IN</span>
+          <span class="mono font-bold">${formatTokens(totalInTokens)} tok</span>
+        </div>
+        <div class="flex justify-between items-center text-[10px] mb-1.5">
+          <span class="opacity-80">Total OUT</span>
+          <span class="mono font-bold">${formatTokens(totalOutTokens)} tok</span>
+        </div>
+        <div class="border-t border-white/30 pt-1.5 flex justify-between items-baseline">
+          <span class="text-[10px] opacity-90 font-semibold uppercase tracking-wider">รวมสุทธิ</span>
+          <div class="text-right">
+            <div class="text-base font-bold mono">฿${totalThb.toFixed(2)}</div>
+            <div class="text-[9px] opacity-70 mono">≈ ฿${(totalThb / filled).toFixed(2)}/ใบ</div>
+          </div>
+        </div>
+      </div>
+
+      ${isFreeTier ? `
+        <div class="text-[10px] text-emerald-700 flex items-start gap-1 p-1.5 rounded bg-emerald-50 border border-emerald-200">
+          <span class="ms ms-sm flex-shrink-0">card_giftcard</span>
+          <span><strong>Gemini free tier</strong> (1,500/วัน) — ฿0 ถ้ายังไม่เกิน</span>
+        </div>
+      ` : ''}
+    </div>
+  `;
+  if (src) {
+    const overrideCount = Object.keys(cs.providerOverrides || {}).length;
+    src.textContent = overrideCount > 0
+      ? `${overrideCount} provider override active`
+      : 'ราคา default จาก registry';
+  }
+}
+
+function formatTokens(n) {
+  n = Math.round(n);
+  if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return String(n);
+}
+
+// ===========================
+//  INVOICE SVG
+// ===========================
+function invoiceHTML(inv){
+  const i=inv||{id:'INV-2025-00018',vendor:'Logistics Partner Ltd.',date:'05/04/2025',vat:'700.00',total:'10,700.00',net:'10,000.00'};
+  return`<div class="inv-doc">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0369a1;padding-bottom:12px;margin-bottom:12px">
+      <div>
+        <div style="font-size:13px;font-weight:800;color:#0369a1;letter-spacing:.03em">LOGISTICS PARTNER LTD.</div>
+        <div style="color:#64748b;font-size:10px;line-height:1.6;margin-top:2px">123 Harbor Road, Samutprakarn 10280<br>Tel: 02-345-6789 | Tax ID: 0105556123456</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;font-weight:700;color:#0369a1;border:1.5px solid #0369a1;border-radius:4px;padding:3px 10px;margin-bottom:5px">ใบกำกับภาษี / TAX INVOICE</div>
+        <div style="font-size:10px;color:#475569;line-height:1.8">
+          เลขที่: <strong style="color:#0f172a;font-family:'JetBrains Mono',monospace">INV-2025-00018</strong><br>
+          วันที่: <strong style="color:#0f172a">05/04/2025</strong><br>
+          ครบกำหนด: <strong style="color:#0f172a">05/05/2025</strong>
+        </div>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:10px;margin-bottom:10px;border:1px solid #e2e8f0">
+      <strong style="color:#0369a1">ผู้ซื้อ / Bill To:</strong><br>
+      บริษัท ท็อปเทียร์ กรุ๊ป จำกัด<br>
+      88/1 ถนนพระรามที่ 9 แขวงห้วยขวาง กรุงเทพฯ 10310<br>
+      <span style="color:#64748b">Tax ID: 0105562000001 | PO: <strong style="color:#0f172a;font-family:'JetBrains Mono',monospace">PO-2025-1188</strong></span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:10px">
+      <thead><tr style="background:#0369a1;color:white">
+        <th style="padding:5px 8px;text-align:left;border-radius:4px 0 0 0">รายการสินค้า/บริการ</th>
+        <th style="padding:5px 8px;text-align:center;width:40px">จำนวน</th>
+        <th style="padding:5px 8px;text-align:right;width:70px">ราคาหน่วย</th>
+        <th style="padding:5px 8px;text-align:right;width:70px;border-radius:0 4px 0 0">จำนวนเงิน</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #e2e8f0">
+          <td style="padding:6px 8px">Inbound AG-DOCS handling charge</td>
+          <td style="padding:6px 8px;text-align:center">1</td>
+          <td style="padding:6px 8px;text-align:right">7,000.00</td>
+          <td style="padding:6px 8px;text-align:right;font-weight:600">7,000.00</td>
+        </tr>
+        <tr style="border-bottom:1px solid #e2e8f0;background:#f8fafc">
+          <td style="padding:6px 8px">Fuel surcharge (Apr 2025)</td>
+          <td style="padding:6px 8px;text-align:center">1</td>
+          <td style="padding:6px 8px;text-align:right">3,000.00</td>
+          <td style="padding:6px 8px;text-align:right;font-weight:600">3,000.00</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="display:flex;justify-content:flex-end">
+      <div style="width:200px;font-size:10px">
+        <div style="display:flex;justify-content:space-between;padding:3px 0;color:#64748b"><span>ยอดก่อน VAT:</span><strong style="color:#0f172a">10,000.00</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:3px 0;color:#64748b"><span>ภาษีมูลค่าเพิ่ม 7%:</span><strong style="color:#0f172a">700.00</strong></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#0369a1;color:white;border-radius:5px;margin-top:4px;font-weight:700;font-size:11px"><span>ยอดรวมสุทธิ:</span><span>10,700.00 THB</span></div>
+        <div style="text-align:right;margin-top:4px;font-size:9px;color:#94a3b8">เงื่อนไขการชำระ: Net 30 วัน</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding-top:10px;border-top:1px dashed #e2e8f0;font-size:9px;color:#94a3b8;display:flex;justify-content:space-between">
+      <span>ลงชื่อผู้รับรอง: ____________________</span>
+      <span>ตราประทับบริษัท</span>
+    </div>
+  </div>`;
+}
+
+// ===========================
+//  STEP 1 → real upload
+// ===========================
+let currentBatch = null;
+let currentBatchInvoices = [];
+let selectedInvoiceId = null;
+
+async function submitBatchAndGo() {
+  const filesToSend = uploadSlots.filter(s => s.file);
+  if (filesToSend.length === 0) {
+    alert('ยังไม่มีไฟล์ที่จะอัปโหลด');
+    return;
+  }
+
+  // Build multipart body. types[] is parallel to files[].
+  const fd = new FormData();
+  for (const slot of filesToSend) {
+    fd.append('files', slot.file);
+    fd.append('types', slot.typeCode || '');
+  }
+  if (selectedProviderId) fd.append('provider', selectedProviderId);
+
+  // Disable both Start buttons + show loading
+  const buttons = Array.from(document.querySelectorAll('.ocr-go-btn'));
+  const oldHtml = buttons.map(b => b.innerHTML);
+  buttons.forEach(b => {
+    b.disabled = true;
+    b.innerHTML = '<span class="spinner"></span> กำลังอัปโหลด...';
+  });
+
+  try {
+    const r = await fetch('/api/batches', {
+      method: 'POST',
+      credentials: 'include',
+      body: fd,
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      throw new Error(j.error || `HTTP ${r.status}`);
+    }
+    const data = await r.json();
+    currentBatch = data.batch;
+    currentBatchInvoices = data.invoices;
+    selectedInvoiceId = currentBatchInvoices[0]?.id ?? null;
+    goTo(2);
+  } catch (e) {
+    alert('อัปโหลดไม่สำเร็จ: ' + e.message);
+    buttons.forEach((b, i) => {
+      b.disabled = false;
+      b.innerHTML = oldHtml[i];
+    });
+    return;
+  }
+  // re-enable in case user navigates back
+  buttons.forEach((b, i) => {
+    b.disabled = false;
+    b.innerHTML = oldHtml[i];
+  });
+}
+
+// ===========================
+//  STEP 2 — real batch + OCR processing
+// ===========================
+async function initS2() {
+  const empty = document.getElementById('s2-empty');
+  const content = document.getElementById('s2-content');
+  if (!currentBatch) {
+    empty?.classList.remove('hidden');
+    content?.classList.add('hidden');
+    return;
+  }
+  empty?.classList.add('hidden');
+  content?.classList.remove('hidden');
+
+  await loadCurrentBatch();
+
+  // Auto-process any pending invoices on entry
+  await processBatchSequentially();
+}
+
+async function loadCurrentBatch() {
+  if (!currentBatch) return;
+  const r = await api(`/api/batches/${currentBatch.id}`);
+  if (!r.ok) return;
+  const data = await r.json();
+  currentBatch = data.batch;
+  currentBatchInvoices = data.invoices;
+  renderS2BatchHeader();
+  renderS2Queue();
+  if (selectedInvoiceId == null && currentBatchInvoices.length > 0) {
+    selectInvoiceInBatch(currentBatchInvoices[0].id);
+  } else if (selectedInvoiceId != null) {
+    const inv = currentBatchInvoices.find(i => i.id === selectedInvoiceId);
+    if (inv) {
+      renderS2Preview(inv);
+      renderS2Fields(inv);
+    }
+  }
+}
+
+function renderS2BatchHeader() {
+  if (!currentBatch) return;
+  document.getElementById('s2-batch-name').textContent = currentBatch.name;
+  document.getElementById('s2-batch-status').textContent = currentBatch.status;
+  const done = currentBatchInvoices.filter(i => i.ocrStatus === 'done').length;
+  const total = currentBatchInvoices.length;
+  document.getElementById('s2-batch-progress').textContent = `${done} / ${total}`;
+  const pct = total === 0 ? 0 : (done / total) * 100;
+  document.getElementById('s2-batch-progress-bar').style.width = pct + '%';
+  const cost = currentBatchInvoices.reduce((s, i) => s + Number(i.ocrCostThb || 0), 0);
+  document.getElementById('s2-batch-cost').textContent = '฿' + cost.toFixed(4);
+}
+
+/**
+ * Take an OCR provider error blob (often a wrapped JSON from the upstream
+ * vendor) and pull out a short, human-readable sentence.
+ */
+function friendlyOcrError(raw) {
+  if (!raw) return 'ไม่ทราบสาเหตุ';
+  const s = String(raw);
+  // Common: "[provider] Vendor API 4xx: {json...}"
+  // Try to extract JSON message field
+  const jsonStart = s.indexOf('{');
+  if (jsonStart >= 0) {
+    try {
+      const obj = JSON.parse(s.slice(jsonStart));
+      const msg = obj?.error?.message || obj?.message;
+      if (msg) return String(msg);
+    } catch {}
+  }
+  // Fallback: strip provider prefix + truncate
+  return s.replace(/^\[[^\]]+\]\s*/, '').slice(0, 120);
+}
+
+function isApiKeyError(raw) {
+  if (!raw) return false;
+  const s = String(raw).toLowerCase();
+  return s.includes('api key') || s.includes('api_key') || s.includes('unauthorized') || s.includes('401') || s.includes('authentication');
+}
+
+function renderS2Queue() {
+  const wrap = document.getElementById('s2-queue');
+  if (!wrap) return;
+  if (currentBatchInvoices.length === 0) {
+    wrap.innerHTML = '<div class="text-[11px] text-slate-300 italic text-center py-3">ไม่มีไฟล์</div>';
+    return;
+  }
+  wrap.innerHTML = currentBatchInvoices.map((inv, idx) => {
+    const isSel = selectedInvoiceId === inv.id;
+    let badge = '';
+    let pct = 0;
+    switch (inv.ocrStatus) {
+      case 'pending':
+        badge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">รอ</span>';
+        break;
+      case 'processing':
+        badge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 flex items-center gap-1"><span class="spinner" style="width:8px;height:8px;border-width:1.5px"></span>กำลัง</span>';
+        pct = 50;
+        break;
+      case 'done':
+        badge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">✓ เสร็จ</span>';
+        pct = 100;
+        break;
+      case 'failed':
+        badge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">✕ ล้มเหลว</span>';
+        pct = 100;
+        break;
+    }
+    const meta = inv.ocrStatus === 'done'
+      ? `${inv.ocrProviderUsed} · ${(Number(inv.ocrAvgConfidence)*100).toFixed(0)}% · ฿${Number(inv.ocrCostThb).toFixed(4)}`
+      : inv.ocrStatus === 'failed'
+      ? friendlyOcrError(inv.ocrError).slice(0, 80)
+      : `${inv.docTypeCode} · ${formatBytes(inv.fileSizeBytes)}`;
+    return `
+      <div class="p-2.5 rounded-lg border cursor-pointer transition-all ${isSel ? 'border-sky-400 bg-sky-50' : 'border-slate-200 hover:bg-slate-50'}"
+           onclick="selectInvoiceInBatch(${inv.id})">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-5 h-5 rounded-full bg-sky-500 text-white text-[9px] font-bold flex items-center justify-center flex-shrink-0">${idx+1}</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-[11px] font-medium text-slate-700 truncate">${escapeHtml(inv.originalFilename)}</div>
+          </div>
+          ${badge}
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="text-[9px] ${inv.ocrStatus === 'failed' ? 'text-rose-600' : 'text-slate-500'} mt-1 truncate" title="${escapeHtml(meta)}">${escapeHtml(meta)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function processBatchSequentially() {
+  if (!currentBatch || currentBatchInvoices.length === 0) return;
+
+  for (const inv of currentBatchInvoices) {
+    if (inv.ocrStatus !== 'pending' && inv.ocrStatus !== 'failed') continue;
+
+    inv.ocrStatus = 'processing';
+    renderS2Queue();
+    if (selectedInvoiceId === inv.id) renderS2Fields(inv);
+
+    try {
+      const r = await fetch(`/api/invoices/${inv.id}/ocr`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        inv.ocrStatus = 'failed';
+        inv.ocrError = j.error || `HTTP ${r.status}`;
+      } else {
+        const { invoice: updated } = await r.json();
+        Object.assign(inv, updated);
+      }
+    } catch (e) {
+      inv.ocrStatus = 'failed';
+      inv.ocrError = e.message;
+    }
+    renderS2Queue();
+    renderS2BatchHeader();
+    if (selectedInvoiceId === inv.id) {
+      renderS2Fields(inv);
+      renderS2Preview(inv);
+    }
+  }
+}
+
+async function reprocessAllPending() {
+  // Reset failed → pending so processBatchSequentially picks them up
+  for (const inv of currentBatchInvoices) {
+    if (inv.ocrStatus === 'failed') inv.ocrStatus = 'pending';
+  }
+  renderS2Queue();
+  await processBatchSequentially();
+}
+
+function selectInvoiceInBatch(id) {
+  selectedInvoiceId = id;
+  const inv = currentBatchInvoices.find(i => i.id === id);
+  if (!inv) return;
+  renderS2Queue();
+  renderS2Preview(inv);
+  renderS2Fields(inv);
+}
+
+function renderS2Preview(inv) {
+  const wrap = document.getElementById('inv-preview-2');
+  const meta = document.getElementById('inv-preview-meta');
+  if (!wrap) return;
+  const url = `/api/invoices/${inv.id}/file`;
+  if (inv.mimeType === 'application/pdf') {
+    wrap.classList.remove('flex','items-center','justify-center','italic','text-slate-300');
+    wrap.style.minHeight = '420px';
+    wrap.innerHTML = `<iframe src="${url}" style="width:100%;height:420px;border:0;display:block"></iframe>`;
+  } else if (inv.mimeType.startsWith('image/')) {
+    wrap.classList.remove('flex','items-center','justify-center','italic','text-slate-300');
+    wrap.style.minHeight = '';
+    wrap.innerHTML = `<img src="${url}" alt="${escapeHtml(inv.originalFilename)}" style="max-width:100%;display:block">`;
+  } else {
+    wrap.innerHTML = `<div class="p-4 text-center text-[11px] text-slate-400">${escapeHtml(inv.mimeType)} preview not available</div>`;
+  }
+  if (meta) {
+    meta.innerHTML = `<span class="mono">${escapeHtml(inv.originalFilename)}</span> · ${formatBytes(inv.fileSizeBytes)} · ${escapeHtml(inv.mimeType)}`;
+  }
+}
+
+function renderS2Fields(inv) {
+  const wrap = document.getElementById('ocr-fields-pane');
+  if (!wrap) return;
+
+  if (inv.ocrStatus === 'pending') {
+    wrap.innerHTML = '<div class="text-[11px] text-slate-400 italic text-center py-6">รอประมวลผล...</div>';
+    return;
+  }
+  if (inv.ocrStatus === 'processing') {
+    wrap.innerHTML = '<div class="text-[11px] text-sky-600 text-center py-6 flex items-center justify-center gap-2"><span class="spinner"></span> กำลังเรียก AI OCR...</div>';
+    return;
+  }
+  if (inv.ocrStatus === 'failed') {
+    const friendly = friendlyOcrError(inv.ocrError);
+    const isKeyErr = isApiKeyError(inv.ocrError);
+    wrap.innerHTML = `
+      <div class="text-[11px] text-rose-700 p-3 rounded bg-rose-50 border border-rose-200">
+        <div class="font-semibold mb-1 flex items-center gap-1.5"><span class="ms ms-sm">error</span> ประมวลผลล้มเหลว</div>
+        <div class="text-[11px] text-rose-700 leading-relaxed">${escapeHtml(friendly)}</div>
+        ${isKeyErr ? `
+          <div class="mt-2 pt-2 border-t border-rose-200 text-[10px] text-rose-600 leading-relaxed">
+            <div class="font-semibold mb-1">วิธีแก้:</div>
+            1. ขอ Gemini API key ฟรีที่ <a href="https://aistudio.google.com/apikey" target="_blank" class="underline">aistudio.google.com/apikey</a><br>
+            2. เปิด <strong>Admin → AI Provider → API Keys</strong> แล้วใส่ key
+          </div>
+        ` : ''}
+      </div>
+      <div class="flex gap-2 mt-2">
+        <button class="btn btn-ghost flex-1 text-[11px]" onclick="retryInvoice(${inv.id})">
+          <span class="ms ms-sm">refresh</span> ลองใหม่
+        </button>
+        ${isKeyErr && currentUser?.role === 'admin' ? `
+          <button class="btn text-[11px]" style="background:#0ea5e9;color:white;border-color:#0284c7" onclick="openSettings()">
+            <span class="ms ms-sm">key</span> ไปตั้ง API key
+          </button>
+        ` : ''}
+      </div>
+    `;
+    return;
+  }
+
+  // ocrStatus === 'done'
+  let conf = {};
+  try {
+    const raw = JSON.parse(inv.ocrRawJson || '{}');
+    conf = raw.field_confidence || {};
+  } catch {}
+
+  const rows = [
+    { label: 'ผู้ขาย',                value: inv.vendorName,    key: 'vendor_name' },
+    { label: 'เลขประจำตัวผู้เสียภาษี', value: inv.vendorTaxId,   key: 'vendor_tax_id' },
+    { label: 'เลขที่ใบแจ้งหนี้',       value: inv.invoiceNumber, key: 'invoice_number' },
+    { label: 'วันที่ใบแจ้งหนี้',       value: inv.invoiceDate,   key: 'invoice_date' },
+    { label: 'เลขที่ PO',              value: inv.poNumber,      key: 'po_number' },
+    { label: 'ยอดก่อน VAT',            value: inv.subtotalAmount, key: 'subtotal' },
+    { label: 'VAT',                   value: inv.vatAmount,     key: 'vat_amount' },
+    { label: 'ยอดรวมสุทธิ',            value: inv.totalAmount,   key: 'total_amount' },
+    { label: 'สกุลเงิน',               value: inv.currency,      key: 'currency' },
+    { label: 'เงื่อนไขการชำระ',        value: inv.paymentTerms,  key: 'payment_terms' },
+  ];
+
+  wrap.innerHTML = `
+    <div class="text-[10px] text-slate-500 mb-2 flex items-center justify-between">
+      <span class="font-semibold">${escapeHtml(inv.ocrProviderUsed || '')}</span>
+      <span class="font-mono">${inv.ocrLatencyMs}ms · ${inv.ocrInputTokens}+${inv.ocrOutputTokens} tok · ฿${Number(inv.ocrCostThb).toFixed(4)}</span>
+    </div>
+    <div class="overflow-hidden rounded-xl border">
+      <table class="w-full text-[11px]">
+        <thead class="bg-slate-50"><tr>
+          <th class="p-2 text-left text-slate-500 font-medium">ฟิลด์</th>
+          <th class="p-2 text-left text-slate-500 font-medium">ค่า</th>
+          <th class="p-2 text-center text-slate-500 font-medium w-12">%</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r => {
+            const c = Number(conf[r.key] ?? 0);
+            const pct = Math.round(c * 100);
+            const tone = pct >= 90 ? '#059669' : pct >= 70 ? '#b45309' : '#dc2626';
+            return `<tr>
+              <td class="p-2 text-slate-500">${r.label}</td>
+              <td class="p-2 mono text-[10.5px]">${r.value != null && r.value !== '' ? escapeHtml(String(r.value)) : '<em class="text-slate-300">—</em>'}</td>
+              <td class="p-2 text-center" style="color:${tone};font-weight:600">${pct ? pct + '%' : '—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <button class="btn btn-ghost w-full mt-2 text-[11px]" onclick="retryInvoice(${inv.id})">
+      <span class="ms ms-sm">refresh</span> รัน OCR ใหม่
+    </button>
+  `;
+}
+
+async function retryInvoice(id) {
+  const inv = currentBatchInvoices.find(i => i.id === id);
+  if (!inv) return;
+  inv.ocrStatus = 'processing';
+  renderS2Queue();
+  if (selectedInvoiceId === id) renderS2Fields(inv);
+  try {
+    const r = await fetch(`/api/invoices/${id}/ocr`, { method: 'POST', credentials: 'include' });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      inv.ocrStatus = 'failed';
+      inv.ocrError = j.error || `HTTP ${r.status}`;
+    } else {
+      const { invoice: updated } = await r.json();
+      Object.assign(inv, updated);
+    }
+  } catch (e) {
+    inv.ocrStatus = 'failed';
+    inv.ocrError = e.message;
+  }
+  renderS2Queue();
+  renderS2BatchHeader();
+  if (selectedInvoiceId === id) {
+    renderS2Fields(inv);
+    renderS2Preview(inv);
+  }
+}
+
+// ===========================
+//  STEP 3 — real AI Matching
+// ===========================
+async function initS3() {
+  const oi = document.getElementById('proc-output-info');
+  if (oi) oi.innerHTML = PROC_OUTPUT[currentProc] ?? '';
+
+  if (!currentBatch) {
+    // No batch — render mock data so the page isn't empty
+    renderMatchTable();
+    return;
+  }
+
+  // Fetch fresh batch data so we have the latest matching state
+  const r = await api(`/api/batches/${currentBatch.id}`);
+  if (r.ok) {
+    const data = await r.json();
+    currentBatch = data.batch;
+    currentBatchInvoices = data.invoices;
+  }
+
+  // Only OCR-done invoices are eligible for matching
+  const eligible = currentBatchInvoices.filter(i => i.ocrStatus === 'done');
+  const alreadyMatched = eligible.filter(i => i.matchDecision != null);
+
+  // Auto-trigger /match if anything is missing
+  if (eligible.length > 0 && alreadyMatched.length < eligible.length) {
+    await runMatchOnCurrentBatch();
+  }
+
+  renderRealMatchTable();
+}
+
+async function runMatchOnCurrentBatch() {
+  if (!currentBatch) return;
+  // show in-progress placeholder
+  const tbl = document.getElementById('match-tbl');
+  if (tbl) tbl.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-[11px] text-sky-600"><span class="spinner"></span> กำลัง embed + match...</td></tr>';
+
+  try {
+    const r = await fetch(`/api/batches/${currentBatch.id}/match`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      if (tbl) tbl.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-[11px] text-rose-600">❌ ${escapeHtml(j.error || 'match failed')}</td></tr>`;
+      return;
+    }
+    const data = await r.json();
+    currentBatch = data.batch;
+    currentBatchInvoices = data.invoices;
+    renderRealMatchTable();
+  } catch (e) {
+    if (tbl) tbl.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-[11px] text-rose-600">❌ ${escapeHtml(e.message)}</td></tr>`;
+  }
+}
+
+function renderRealMatchTable() {
+  const tbl = document.getElementById('match-tbl');
+  if (!tbl) return;
+  const eligible = currentBatchInvoices.filter(i => i.ocrStatus === 'done' && i.matchDecision);
+  if (eligible.length === 0) {
+    tbl.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-[11px] text-slate-400 italic">ยังไม่มีไฟล์ที่ผ่าน OCR + matching</td></tr>';
+    document.getElementById('m-auto').textContent = '0';
+    document.getElementById('m-review').textContent = '0';
+    document.getElementById('m-except').textContent = '0';
+    return;
+  }
+  let auto = 0, rev = 0, exc = 0;
+  tbl.innerHTML = eligible.map(inv => {
+    let badge, color;
+    if (inv.matchDecision === 'AUTO_POST') { badge = '✓ Auto Post'; color = 'border-color:#bbf7d0;background:#f0fdf4;color:#059669'; auto++; }
+    else if (inv.matchDecision === 'REVIEW') { badge = '⚠ Review'; color = 'border-color:#fed7aa;background:#fffbeb;color:#b45309'; rev++; }
+    else { badge = '✕ Exception'; color = 'border-color:#fecaca;background:#fef2f2;color:#dc2626'; exc++; }
+    const score = Math.round(Number(inv.vendorMatchScore || 0) * 100);
+    const poDisp = inv.poNumber || (inv.matchedPoId ? '(fuzzy)' : 'ไม่พบ PO');
+    const poColor = inv.matchedPoId ? 'color:#059669' : 'color:#dc2626';
+    return `<tr class="ocr-row" onclick="showRealMatchDetail(${inv.id})">
+      <td class="p-2 mono text-[10px]">${escapeHtml(inv.invoiceNumber || ('#' + inv.id))}</td>
+      <td class="p-2">${escapeHtml(inv.vendorName || '—')}</td>
+      <td class="p-2 mono text-[10px]" style="${poColor}">${escapeHtml(poDisp)}</td>
+      <td class="p-2">${inv.totalAmount ? Number(inv.totalAmount).toLocaleString() : '—'}</td>
+      <td class="p-2 mono text-sky-700 font-medium">${escapeHtml(inv.suggestedGlCode || '—')}</td>
+      <td class="p-2 text-center"><span class="badge" style="${color}">${score}%</span></td>
+      <td class="p-2"><span class="badge" style="${color}">${badge}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('m-auto').textContent = String(auto);
+  document.getElementById('m-review').textContent = String(rev);
+  document.getElementById('m-except').textContent = String(exc);
+}
+
+function showRealMatchDetail(invoiceId) {
+  const inv = currentBatchInvoices.find(i => i.id === invoiceId);
+  if (!inv) return;
+
+  const reasonEl = document.getElementById('match-reason');
+  if (reasonEl) {
+    reasonEl.innerHTML = `<div style="color:#34d399;line-height:1.7">${escapeHtml(inv.matchReasoning || '(no reasoning)')}</div>`;
+  }
+
+  const detailEl = document.getElementById('match-detail');
+  if (!detailEl) return;
+  const score = Math.round(Number(inv.vendorMatchScore || 0) * 100);
+  const scoreColor = score >= 90 ? '#059669' : score >= 60 ? '#b45309' : '#dc2626';
+  const scoreBg = score >= 90 ? '#f0fdf4' : score >= 60 ? '#fffbeb' : '#fef2f2';
+  detailEl.innerHTML = `
+    <div class="space-y-2 text-[11px]">
+      <div class="p-2 rounded-lg border bg-slate-50">
+        <div class="text-[10px] text-slate-400">Invoice No.</div>
+        <div class="font-semibold mono">${escapeHtml(inv.invoiceNumber || ('#' + inv.id))}</div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">Vendor</div>
+          <div class="font-medium text-[11px]">${escapeHtml(inv.vendorName || '—')}</div>
+        </div>
+        <div class="p-2 rounded-lg border" style="background:${scoreBg}">
+          <div class="text-[10px] text-slate-400">Vendor Match</div>
+          <div class="font-bold text-base" style="color:${scoreColor}">${score}%</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">PO Reference</div>
+          <div class="mono text-[10px] ${inv.matchedPoId ? 'text-emerald-700' : 'text-rose-600'}">${escapeHtml(inv.poNumber || 'ไม่พบ')}</div>
+        </div>
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">Amount (THB)</div>
+          <div class="font-semibold">฿${inv.totalAmount ? Number(inv.totalAmount).toLocaleString() : '—'}</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">GL แนะนำ</div>
+          <div class="mono text-sky-700 font-medium">${escapeHtml(inv.suggestedGlCode || '—')}</div>
+        </div>
+        <div class="p-2 rounded-lg border bg-slate-50">
+          <div class="text-[10px] text-slate-400">Decision</div>
+          <div class="font-semibold">${escapeHtml(inv.matchDecision || '—')}</div>
+        </div>
+      </div>
+    </div>`;
+  const ovrGl = document.getElementById('ovr-gl');
+  const ovrCc = document.getElementById('ovr-cc');
+  if (ovrGl) ovrGl.value = inv.suggestedGlCode || '';
+  if (ovrCc) ovrCc.value = inv.suggestedCostCenter || '';
+}
+
+function confStyle(c){
+  return c>=90?'border-color:#bbf7d0;background:#f0fdf4;color:#059669':c>=80?'border-color:#fed7aa;background:#fffbeb;color:#b45309':'border-color:#fecaca;background:#fef2f2;color:#dc2626';
+}
+
+function renderRules(){
+  document.getElementById('map-rules-tbl').innerHTML=RULES.map(r=>`
+    <tr>
+      <td class="p-2 mono text-slate-400 font-semibold">${r.id}</td>
+      <td class="p-2 text-slate-700 text-[11px]">${r.pat}</td>
+      <td class="p-2 mono text-sky-700 font-semibold">${r.acc}</td>
+      <td class="p-2 mono text-slate-600">${r.cc}</td>
+      <td class="p-2">${r.tax}</td>
+      <td class="p-2 text-center"><span style="font-size:10px;padding:2px 6px;border-radius:9999px;border-width:1px;font-weight:600;${confStyle(r.conf)}">${r.conf}%</span></td>
+      <td class="p-2"><button class="text-slate-300 hover:text-rose-400 text-xs transition-colors" onclick="delRule(${r.id})">✕</button></td>
+    </tr>`).join('');
+}
+
+function delRule(id){
+  if(!confirm('ลบกฎที่ '+id+'?')) return;
+  const i=RULES.findIndex(r=>r.id===id);
+  if(i>=0){RULES.splice(i,1); renderRules();}
+}
+
+function addRule(){
+  const pat=prompt('เงื่อนไข (Pattern):'); if(!pat) return;
+  const acc=prompt('รหัสบัญชี (เช่น 5110-Material):'); if(!acc) return;
+  const cc=prompt('Cost Center (เช่น WH-A01):');
+  RULES.push({id:RULES.length+1,pat,acc:acc||'—',cc:cc||'—',tax:'VAT 7%',conf:0,match:()=>false});
+  renderRules();
+}
+
+function testPattern(){
+  const v=document.getElementById('t-vendor').value,
+        t=document.getElementById('t-type').value,
+        k=document.getElementById('t-kw').value,
+        res=document.getElementById('test-result');
+  if(!v&&!t&&!k){res.innerHTML='<div class="text-slate-400 text-center py-2">กรอกข้อมูลเพื่อทดสอบ →</div>';return;}
+  const m=RULES.find(r=>r.match(v,t,k));
+  res.innerHTML=m?`
+    <div class="space-y-2">
+      <div style="color:#059669;font-weight:600;font-size:11px">✓ ตรงกับกฎที่ ${m.id}</div>
+      <div style="background:#f1f5f9;border-radius:7px;padding:7px;font-size:10px;color:#475569;font-family:'JetBrains Mono',monospace;line-height:1.6">${m.pat}</div>
+      ${[['รหัสบัญชี',`<span style="color:#0369a1;font-family:'JetBrains Mono',monospace;font-weight:600">${m.acc}</span>`],
+         ['Cost Center',`<span style="font-family:'JetBrains Mono',monospace">${m.cc}</span>`],
+         ['ภาษี',m.tax],
+         ['ความเชื่อมั่น',`<span style="font-weight:600;color:#059669">${m.conf}%</span>`]]
+         .map(([l,v])=>`<div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:#64748b">${l}</span>${v}</div>`).join('')}
+    </div>`:
+    `<div style="color:#dc2626;font-weight:600;font-size:11px;margin-bottom:6px">⚠ ไม่พบกฎที่ตรงเงื่อนไข</div>
+     <div style="font-size:10px;color:#94a3b8">กรุณาเพิ่มกฎใหม่ในตาราง หรือปรับข้อมูลที่ค้นหา</div>`;
+}
+
+// ===========================
+//  STEP 4 — real review queue (uses currentBatchInvoices)
+//  (selInv is declared in the STATE block above)
+// ===========================
+const STATUS = {
+  pending:  { label: 'รอตรวจสอบ',  s: 'border-color:#bae6fd;background:#f0f9ff;color:#0369a1' },
+  approved: { label: 'อนุมัติแล้ว', s: 'border-color:#bbf7d0;background:#f0fdf4;color:#059669' },
+  hold:     { label: 'พักไว้',      s: 'border-color:#fed7aa;background:#fffbeb;color:#b45309' },
+  rejected: { label: 'ไม่อนุมัติ',  s: 'border-color:#fecaca;background:#fef2f2;color:#dc2626' },
+};
+
+async function initS4() {
+  if (currentBatch) {
+    // refresh from server so we have latest review_status etc.
+    const r = await api(`/api/batches/${currentBatch.id}`);
+    if (r.ok) {
+      const data = await r.json();
+      currentBatch = data.batch;
+      currentBatchInvoices = data.invoices;
+    }
+  }
+  renderQueue();
+  updateCounts();
+  checkStep5();
+}
+
+function reviewableInvoices() {
+  // Only OCR-done invoices reach the review queue
+  return currentBatchInvoices.filter(i => i.ocrStatus === 'done');
+}
+
+function renderQueue() {
+  const f = document.getElementById('q-filter')?.value || 'all';
+  const list = f === 'all' ? reviewableInvoices() : reviewableInvoices().filter(i => i.reviewStatus === f);
+  const wrap = document.getElementById('rev-queue');
+  if (!wrap) return;
+  if (list.length === 0) {
+    wrap.innerHTML = '<div class="text-[11px] text-slate-300 italic text-center py-4">ไม่มีรายการ — กลับไป Step 1 เพื่ออัปโหลดเอกสาร</div>';
+    return;
+  }
+  wrap.innerHTML = list.map(inv => {
+    const st = STATUS[inv.reviewStatus] || STATUS.pending;
+    const isSel = selInv?.id === inv.id;
+    return `<div class="flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-all ${isSel ? 'border-sky-400 bg-sky-50' : 'hover:bg-slate-50'}" onclick="selRealInvoice(${inv.id})">
+      <input type="checkbox" class="q-chk rounded" data-id="${inv.id}" onclick="event.stopPropagation()">
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-[11px] mono truncate">${escapeHtml(inv.invoiceNumber || ('#' + inv.id))}</div>
+        <div style="font-size:10px;color:#94a3b8" class="truncate">${escapeHtml(inv.vendorName || '—')} · ${inv.totalAmount ? Number(inv.totalAmount).toLocaleString() : '—'} THB</div>
+      </div>
+      <span style="font-size:9px;padding:.15rem .55rem;border-radius:9999px;border-width:1px;font-weight:500;white-space:nowrap;${st.s}">${st.label}</span>
+    </div>`;
+  }).join('');
+}
+
+function selRealInvoice(id) {
+  selInv = currentBatchInvoices.find(i => i.id === id);
+  if (!selInv) return;
+  document.getElementById('d-vendor').textContent = selInv.vendorName || '—';
+  document.getElementById('d-inv').textContent = selInv.invoiceNumber || ('#' + selInv.id);
+  document.getElementById('d-date').textContent = selInv.invoiceDate || '—';
+  document.getElementById('d-total').textContent = (selInv.totalAmount ? Number(selInv.totalAmount).toLocaleString() : '0') + ' THB';
+  document.getElementById('d-score').textContent = selInv.vendorMatchScore
+    ? (Math.round(Number(selInv.vendorMatchScore) * 100) + '%')
+    : '—';
+  document.getElementById('d-diff').textContent = '0.00 THB';
+
+  // Lines from invoice_lines (we need to fetch them)
+  api(`/api/invoices/${selInv.id}`).then(r => r.json()).then(data => {
+    const lines = data.lines || [];
+    const linesEl = document.getElementById('d-lines');
+    if (!linesEl) return;
+    if (lines.length === 0) {
+      linesEl.innerHTML = '<tr><td colspan="4" class="p-2 text-center text-[10px] text-slate-300">— ไม่มี line items —</td></tr>';
+      return;
+    }
+    linesEl.innerHTML = lines.map(l => `<tr>
+      <td class="p-1.5 text-[10px]">${escapeHtml(l.description || '')}</td>
+      <td class="p-1.5"><input value="${escapeHtml(selInv.suggestedGlCode || '')}" style="width:110px;padding:2px 5px;border:1px solid #e2e8f0;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px"></td>
+      <td class="p-1.5"><input value="${escapeHtml(selInv.suggestedCostCenter || '')}" style="width:65px;padding:2px 5px;border:1px solid #e2e8f0;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px"></td>
+      <td class="p-1.5 text-right font-medium text-[10px]">${l.amount ? Number(l.amount).toLocaleString() : '—'}</td>
+    </tr>`).join('');
+  }).catch(() => {});
+
+  // preview
+  const p4 = document.getElementById('inv-preview-4');
+  if (p4) {
+    const url = `/api/invoices/${selInv.id}/file`;
+    if (selInv.mimeType === 'application/pdf') {
+      p4.innerHTML = `<iframe src="${url}" style="width:100%;height:380px;border:0;display:block"></iframe>`;
+    } else {
+      p4.innerHTML = `<img src="${url}" style="max-width:100%;display:block">`;
+    }
+    // stamp
+    const existing = p4.querySelector('.stamp');
+    if (existing) existing.remove();
+    if (selInv.reviewStatus === 'approved') {
+      const s = document.createElement('div'); s.className = 'stamp stamp-approved'; s.textContent = 'APPROVED';
+      p4.style.position = 'relative'; p4.appendChild(s);
+    }
+    if (selInv.reviewStatus === 'rejected') {
+      const s = document.createElement('div'); s.className = 'stamp stamp-rejected'; s.textContent = 'REJECTED';
+      p4.style.position = 'relative'; p4.appendChild(s);
+    }
+  }
+
+  // AI note (shown only for EXCEPTION decisions)
+  const note = document.getElementById('inv-ai-note');
+  if (note) {
+    note.classList.toggle('hidden', selInv.matchDecision !== 'EXCEPTION');
+    if (selInv.matchDecision === 'EXCEPTION') {
+      note.innerHTML = `<strong class="text-sky-700">AI Reasoning:</strong> ${escapeHtml(selInv.matchReasoning || '')}`;
+    }
+  }
+
+  ['btn-apv', 'btn-hld', 'btn-rej'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = false;
+  });
+  renderQueue();
+}
+
+async function doAction(status) {
+  if (!selInv) return;
+  const note = document.getElementById('rev-note')?.value || null;
+  const r = await api(`/api/invoices/${selInv.id}/review`, {
+    method: 'PUT',
+    body: JSON.stringify({ status, note }),
+  });
+  if (!r.ok) {
+    alert('บันทึกไม่สำเร็จ');
+    return;
+  }
+  const { invoice } = await r.json();
+  Object.assign(selInv, invoice);
+  // also update in array
+  const idx = currentBatchInvoices.findIndex(i => i.id === invoice.id);
+  if (idx >= 0) currentBatchInvoices[idx] = invoice;
+  renderQueue();
+  updateCounts();
+  checkStep5();
+  selRealInvoice(selInv.id);
+}
+
+async function bulkAction(status) {
+  const ids = Array.from(document.querySelectorAll('.q-chk:checked'))
+    .map(cb => Number(cb.dataset.id))
+    .filter(Number.isFinite);
+  if (ids.length === 0) {
+    alert('เลือกอย่างน้อย 1 รายการ');
+    return;
+  }
+  const r = await api('/api/invoices/bulk-review', {
+    method: 'PUT',
+    body: JSON.stringify({ ids, status }),
+  });
+  if (!r.ok) { alert('บันทึก bulk ไม่สำเร็จ'); return; }
+  // refresh batch from server
+  if (currentBatch) {
+    const r2 = await api(`/api/batches/${currentBatch.id}`);
+    if (r2.ok) {
+      const data = await r2.json();
+      currentBatchInvoices = data.invoices;
+    }
+  }
+  renderQueue();
+  updateCounts();
+  checkStep5();
+}
+
+function updateCounts() {
+  const list = reviewableInvoices();
+  document.getElementById('cnt-p').textContent = list.filter(i => i.reviewStatus === 'pending').length;
+  document.getElementById('cnt-a').textContent = list.filter(i => i.reviewStatus === 'approved').length;
+  document.getElementById('cnt-h').textContent = list.filter(i => i.reviewStatus === 'hold' || i.reviewStatus === 'rejected').length;
+}
+
+function checkStep5() {
+  const btn = document.getElementById('btn-to5');
+  if (btn) btn.disabled = !reviewableInvoices().some(i => i.reviewStatus === 'approved');
+}
+
+// ===========================
+//  STEP 5 — real submit (CSV / mock SAP)
+// ===========================
+let lastSubmitResult = null;
+
+const logEl  = () => document.getElementById('erp-log');
+const respEl = () => document.getElementById('erp-resp');
+
+function appendLog(txt, cls = '') {
+  logLines.push({ txt, cls });
+  const el = logEl();
+  if (!el) return;
+  const d = document.createElement('div');
+  d.className = cls; d.textContent = txt; el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+
+function setStatus(label, desc, ok) {
+  const lbl = document.getElementById('bs-label');
+  const dsc = document.getElementById('bs-desc');
+  const box = document.getElementById('batch-status');
+  if (lbl) lbl.textContent = label;
+  if (dsc) dsc.textContent = desc;
+  if (box) {
+    box.style.borderColor = ok ? '#bbf7d0' : '#bae6fd';
+    box.style.background = ok ? '#f0fdf4' : '#f0f9ff';
+  }
+}
+
+async function runValidate() {
+  if (!currentBatch) { alert('ไม่มี batch ที่กำลังประมวลผล'); return; }
+  logEl().innerHTML = ''; logLines = [];
+  const ts = new Date().toLocaleTimeString('th-TH');
+  appendLog(`[${ts}] เริ่ม Validate batch ${currentBatch.name}...`, 'i');
+
+  // Re-fetch fresh batch
+  const r = await api(`/api/batches/${currentBatch.id}`);
+  if (!r.ok) { appendLog('  ✕ ไม่สามารถโหลด batch ได้', 'r'); return; }
+  const data = await r.json();
+  currentBatch = data.batch; currentBatchInvoices = data.invoices;
+
+  const approved = currentBatchInvoices.filter(i => i.reviewStatus === 'approved');
+  appendLog(`  → ตรวจ ${approved.length} ใบที่อนุมัติแล้ว`, 'i');
+  let errors = 0;
+  for (const inv of approved) {
+    if (!inv.totalAmount || Number(inv.totalAmount) <= 0) {
+      appendLog(`    ✕ ${inv.invoiceNumber || ('#'+inv.id)}: missing total amount`, 'r');
+      errors++;
+      continue;
+    }
+    if (!inv.suggestedGlCode) {
+      appendLog(`    ⚠ ${inv.invoiceNumber || ('#'+inv.id)}: no GL code suggested`, 'w');
+    }
+    appendLog(`    ✓ ${inv.invoiceNumber || ('#'+inv.id)} — ${Number(inv.totalAmount).toLocaleString()} THB`, 'e');
+  }
+  if (errors === 0) {
+    appendLog(`\n✓ Validation เสร็จสิ้น — ${approved.length} รายการพร้อมส่ง`, 'e');
+    setStatus('ผ่าน Validation', 'พร้อมส่งข้อมูลจริง', true);
+  } else {
+    appendLog(`\n✕ พบ ${errors} ข้อผิดพลาด — แก้ไขก่อนส่ง`, 'r');
+    setStatus('Validation ไม่ผ่าน', `พบ ${errors} ข้อผิดพลาด`, false);
+  }
+}
+
+async function exportCSV() {
+  return submitBatchInternal('csv');
+}
+
+async function submitBatch() {
+  return submitBatchInternal();
+}
+
+async function submitBatchInternal(forceTarget) {
+  if (!currentBatch) { alert('ไม่มี batch'); return; }
+  const isReal = document.getElementById('mode-real')?.checked;
+  const target = forceTarget || document.getElementById('erp-target')?.value || 'csv';
+
+  const btn = document.getElementById('btn-submit');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> กำลังส่งข้อมูล...';
+  }
+  logEl().innerHTML = ''; respEl().innerHTML = ''; logLines = [];
+
+  const ts = new Date().toLocaleTimeString('th-TH');
+  appendLog(`[${ts}] ═══ เริ่ม Posting ${currentBatch.name} ═══`, 'ts');
+  appendLog(`  Mode: ${isReal ? '⚠ REAL POSTING' : 'TEST RUN'}`, isReal ? 'w' : 'i');
+  appendLog(`  Target: ${target}`, 'i');
+
+  try {
+    const r = await api(`/api/batches/${currentBatch.id}/submit`, {
+      method: 'POST',
+      body: JSON.stringify({ target, mode: isReal ? 'real' : 'test' }),
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      throw new Error(j.error || `HTTP ${r.status}`);
+    }
+    const result = await r.json();
+    lastSubmitResult = result;
+
+    appendLog(`  ✓ Server returned ${result.documents.length} document(s)`, 'e');
+    for (const d of result.documents) {
+      const erp = d.erpDocNo ? ` → ERP ${d.erpDocNo}` : '';
+      appendLog(`    ✓ ${d.invoiceNumber || ('#'+d.invoiceId)} | ${d.account || '—'} | ${d.amount.toLocaleString()} THB${erp}`, 'e');
+    }
+    appendLog(`\n✓ ${result.message}`, 'ts');
+
+    // CSV: trigger download
+    if (target === 'csv' && result.csvBase64) {
+      const bin = atob(result.csvBase64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const blob = new Blob([bytes], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = result.csvFilename || 'export.csv';
+      a.click();
+      appendLog(`  📥 ดาวน์โหลด ${result.csvFilename}`, 'i');
+    }
+
+    // Pretty-print JSON response
+    const lines = JSON.stringify(result, null, 2).split('\n');
+    respEl().innerHTML = '';
+    lines.forEach((ln, idx) => {
+      setTimeout(() => {
+        const d = document.createElement('div');
+        d.style.color = ln.includes('"status"') || ln.includes('SUCCESS') ? '#34d399'
+                      : ln.includes('ERROR') ? '#f87171' : '#94a3b8';
+        d.textContent = ln;
+        respEl().appendChild(d);
+        respEl().scrollTop = respEl().scrollHeight;
+      }, idx * 8);
+    });
+
+    setStatus(
+      isReal ? '✓ บันทึกจริงเรียบร้อย' : '✓ Test Run สำเร็จ',
+      `Batch: ${result.batchName} · ${result.documents.length} docs`,
+      true,
+    );
+    if (btn) {
+      btn.innerHTML = '<span class="ms ms-sm">check_circle</span> ส่งข้อมูลเรียบร้อยแล้ว';
+      btn.className = 'btn btn-emerald w-full text-[11px]';
+      btn.disabled = false;
+    }
+    const to6 = document.getElementById('btn-to6');
+    if (to6) to6.disabled = false;
+    submitDone = true;
+  } catch (e) {
+    appendLog(`\n✕ Posting ล้มเหลว: ${e.message}`, 'r');
+    setStatus('ส่งข้อมูลล้มเหลว', e.message, false);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="ms ms-sm">rocket_launch</span> Post AP in SAP';
+    }
+  }
+}
+
+// ===========================
+//  STEP 6 — done summary from real backend
+// ===========================
+function initS6() {
+  const bid = document.getElementById('done-bid');
+  const ts = document.getElementById('done-ts');
+  const dl = document.getElementById('done-log');
+  if (bid) bid.textContent = currentBatch?.name || lastSubmitResult?.batchName || '—';
+  if (ts) ts.textContent = lastSubmitResult?.postedAt
+    ? new Date(lastSubmitResult.postedAt).toLocaleString('th-TH')
+    : new Date().toLocaleString('th-TH');
+  if (dl) dl.innerHTML = logLines.map(l => `<div class="${escapeHtml(l.cls)}">${escapeHtml(l.txt)}</div>`).join('');
+}
+
+function downloadLog() {
+  const txt = logLines.map(l => l.txt).join('\n');
+  const b = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+  a.download = `ocr-log-${currentBatch?.name || 'batch'}-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+}
+
+function newBatch() {
+  // Reset UI to a fresh Step 1
+  uploadSlots = [{ typeCode: docTypes[0]?.code ?? '', file: null }];
+  currentBatch = null;
+  currentBatchInvoices = [];
+  selectedInvoiceId = null;
+  selInv = null;
+  lastSubmitResult = null;
+  logLines = [];
+  submitDone = false;
+  const to5 = document.getElementById('btn-to5'); if (to5) to5.disabled = true;
+  const to6 = document.getElementById('btn-to6'); if (to6) to6.disabled = true;
+  const btn = document.getElementById('btn-submit');
+  if (btn) {
+    btn.innerHTML = '<span class="ms ms-sm">rocket_launch</span> Post AP in SAP (GP / Transaction)';
+    btn.className = 'btn btn-emerald w-full text-[11px]';
+  }
+  setUploadMode('manual');
+  goTo(1);
+}
+
+// ===========================
+//  AUTH + SETTINGS + REAL OCR
+// ===========================
+let currentUser = null;
+
+const api = (path, opts={}) => fetch(path, {
+  credentials: 'include',
+  ...(opts.body && !(opts.body instanceof FormData)
+      ? { headers: { 'content-type': 'application/json', ...(opts.headers||{}) } }
+      : { headers: opts.headers || {} }),
+  ...opts
+});
+
+async function checkAuth() {
+  try {
+    const r = await api('/api/auth/me');
+    if (r.ok) {
+      const { user } = await r.json();
+      onLoggedIn(user);
+    } else {
+      showLogin();
+    }
+  } catch {
+    showLogin();
+  }
+}
+
+function showLogin() {
+  document.body.classList.add('pre-auth');
+}
+
+function hideLogin() {
+  document.body.classList.remove('pre-auth');
+}
+
+function quickFill(u, p) {
+  document.getElementById('lg-user').value = u;
+  document.getElementById('lg-pass').value = p;
+  document.getElementById('lg-pass').focus();
+}
+
+async function doLogin() {
+  const username = document.getElementById('lg-user').value;
+  const password = document.getElementById('lg-pass').value;
+  const err = document.getElementById('lg-err');
+  const errMsg = document.getElementById('lg-err-msg');
+  const btn = document.getElementById('lg-btn');
+  err.classList.add('hidden');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> กำลังเข้าสู่ระบบ...';
+  try {
+    const r = await api('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password })
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      errMsg.textContent = j.error === 'invalid credentials'
+        ? 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
+        : (j.error || 'เข้าสู่ระบบไม่สำเร็จ');
+      err.classList.remove('hidden');
+      return;
+    }
+    const { user } = await r.json();
+    onLoggedIn(user);
+  } catch (e) {
+    errMsg.textContent = 'เกิดข้อผิดพลาด: ' + e.message;
+    err.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="ms ms-sm">login</span> เข้าสู่ระบบ';
+  }
+}
+
+function onLoggedIn(user) {
+  currentUser = user;
+  hideLogin();
+  initStep1();
+
+  const pill = document.getElementById('hdr-user');
+  const roleIcon = user.role === 'admin' ? 'admin_panel_settings' : 'person';
+  const roleBadge = user.role === 'admin'
+    ? 'background:#dbeafe;color:#1d4ed8'
+    : 'background:#fef3c7;color:#b45309';
+  pill.innerHTML = `
+    <span class="ms ms-sm" style="color:#475569">${roleIcon}</span>
+    <span class="font-medium text-slate-700">${escapeHtml(user.fullName)}</span>
+    <span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="${roleBadge}">${user.role}</span>
+  `;
+  pill.style.display = 'inline-flex';
+
+  const stBtn = document.getElementById('hdr-settings');
+  if (user.role === 'admin') {
+    stBtn.classList.remove('hidden');
+  } else {
+    stBtn.classList.add('hidden');
+  }
+
+  // demo: gray-out submit step (5) so it's clear they can't post to ERP
+  document.querySelectorAll('.step-card').forEach(c => {
+    const s = +c.dataset.s;
+    if (s === 5 && user.role === 'demo') {
+      c.style.opacity = '0.4';
+      c.style.cursor = 'not-allowed';
+      c.title = 'demo: ไม่มีสิทธิ์ส่งเข้า ERP';
+      // intercept clicks
+      c.addEventListener('click', (e) => {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        alert('บัญชี demo ไม่มีสิทธิ์ใช้งาน Step 5 (Submit) — กรุณาเข้าใช้ด้วย admin');
+      }, true);
+    }
+  });
+}
+
+async function doLogout() {
+  try { await api('/api/auth/logout', { method: 'POST' }); } catch {}
+  currentUser = null;
+  document.getElementById('hdr-user').style.display = 'none';
+  document.getElementById('hdr-settings').classList.add('hidden');
+  showLogin();
+}
+
+// ----- settings modal -----
+async function openSettings() {
+  if (currentUser?.role !== 'admin') {
+    alert('ต้องเป็น admin เท่านั้น');
+    return;
+  }
+  document.getElementById('settings-modal').classList.remove('hidden');
+  await loadSettings();
+}
+
+function closeSettings() {
+  document.getElementById('settings-modal').classList.add('hidden');
+}
+
+function setCfgTab(name) {
+  document.querySelectorAll('.cfg-tab').forEach(b => {
+    b.classList.toggle('cfg-tab-active', b.dataset.tab === name);
+  });
+  document.querySelectorAll('.cfg-tab-content').forEach(el => {
+    el.classList.toggle('hidden', el.id !== `cfg-tab-${name}`);
+  });
+  if (name === 'doctype') loadDocTypesAdmin();
+  if (name === 'cost') loadCostSettingsAdmin();
+}
+
+async function loadSettings() {
+  try {
+    const [provR, cfgR] = await Promise.all([
+      api('/api/ai/providers'),
+      api('/api/ai/config'),
+    ]);
+    if (!provR.ok || !cfgR.ok) {
+      alert('โหลดข้อมูลล้มเหลว');
+      return;
+    }
+    const { providers } = await provR.json();
+    const cfg = await cfgR.json();
+
+    const primary = document.getElementById('cfg-primary');
+    const fallback = document.getElementById('cfg-fallback');
+
+    primary.innerHTML = providers.map(p =>
+      `<option value="${p.id}" ${p.id===cfg.ocrProviderId?'selected':''}>
+        ${p.displayName} · ${p.tier} · ฿${p.inputCostPer1k.toFixed(4)}/1k in
+      </option>`).join('');
+
+    fallback.innerHTML = '<option value="">— ไม่ใช้ fallback —</option>' + providers.map(p =>
+      `<option value="${p.id}" ${p.id===cfg.fallbackProviderId?'selected':''}>${p.displayName}</option>`).join('');
+
+    document.getElementById('cfg-threshold').value = cfg.fallbackThreshold;
+    document.getElementById('cfg-budget').value = cfg.monthlyBudgetThb;
+
+    const credsBox = document.getElementById('cfg-creds');
+    credsBox.innerHTML = providers.map(p => {
+      const has = cfg.hasCredentialFor[p.id];
+      const status = has
+        ? '<span class="text-[10px] text-emerald-600">● มี key บันทึกแล้ว</span>'
+        : '<span class="text-[10px] text-slate-400">○ ยังไม่มี key</span>';
+      return `
+        <div class="p-3 rounded-lg border bg-slate-50">
+          <div class="flex justify-between items-center mb-1.5">
+            <div class="font-medium text-[11px]">${p.displayName}</div>
+            ${status}
+          </div>
+          <div class="flex gap-2">
+            <input type="password" id="key-${p.id}" placeholder="${has?'(ป้อนเพื่ออัปเดต)':'ใส่ API key...'}" style="flex:1;font-size:11px">
+            <button class="btn btn-ghost text-[11px]" onclick="saveKey('${p.id}')">บันทึก</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    alert('โหลด settings ล้มเหลว: ' + e.message);
+  }
+}
+
+async function saveConfig() {
+  const body = {
+    ocrProviderId: document.getElementById('cfg-primary').value,
+    fallbackProviderId: document.getElementById('cfg-fallback').value || null,
+    fallbackThreshold: Number(document.getElementById('cfg-threshold').value),
+    monthlyBudgetThb: Number(document.getElementById('cfg-budget').value),
+  };
+  const r = await api('/api/ai/config', { method: 'PUT', body: JSON.stringify(body) });
+  if (r.ok) {
+    alert('✓ บันทึก config แล้ว');
+    await loadSettings();
+  } else {
+    const j = await r.json().catch(() => ({}));
+    alert('บันทึกไม่สำเร็จ: ' + (j.error || r.status));
+  }
+}
+
+async function saveKey(providerId) {
+  const input = document.getElementById(`key-${providerId}`);
+  const apiKey = input.value;
+  if (!apiKey || apiKey.length < 8) {
+    alert('API key สั้นเกินไป');
+    return;
+  }
+  const r = await api('/api/ai/credentials', {
+    method: 'PUT',
+    body: JSON.stringify({ providerId, apiKey })
+  });
+  if (r.ok) {
+    input.value = '';
+    await loadSettings();
+  } else {
+    const j = await r.json().catch(() => ({}));
+    alert('บันทึกไม่สำเร็จ: ' + (j.error || r.status));
+  }
+}
+
+// ----- Document type master (admin tab) -----
+async function loadDocTypesAdmin() {
+  const wrap = document.getElementById('cfg-doctype-list');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="text-[11px] text-slate-300">กำลังโหลด...</div>';
+  const r = await api('/api/document-types/all');
+  if (!r.ok) {
+    wrap.innerHTML = '<div class="text-[11px] text-rose-500">โหลดล้มเหลว</div>';
+    return;
+  }
+  const { types } = await r.json();
+  if (types.length === 0) {
+    wrap.innerHTML = '<div class="text-[11px] text-slate-400 italic">ยังไม่มีประเภทเอกสาร</div>';
+    return;
+  }
+  wrap.innerHTML = types.map(t => `
+    <div class="p-3 rounded-lg border ${t.active ? 'bg-white' : 'bg-slate-50 opacity-60'} flex items-center gap-3">
+      <span class="ms ms-lg text-sky-600">${escapeHtml(t.icon || 'description')}</span>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-[12px] text-slate-700 truncate">${escapeHtml(t.name)}</span>
+          <span class="text-[9px] mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">${escapeHtml(t.code)}</span>
+          ${t.active ? '' : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-500">ไม่ใช้งาน</span>'}
+        </div>
+        <div class="text-[10px] text-slate-500 mt-0.5 truncate">${escapeHtml(t.monthlyVolumeLabel || '')}</div>
+      </div>
+      <div class="flex gap-1">
+        ${t.active
+          ? `<button class="text-rose-500 hover:text-rose-600 p-1" onclick="deleteDocType(${t.id})" title="ปิดใช้งาน"><span class="ms ms-sm">delete</span></button>`
+          : `<button class="text-emerald-600 hover:text-emerald-700 p-1" onclick="reactivateDocType(${t.id})" title="เปิดใช้งาน"><span class="ms ms-sm">restart_alt</span></button>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function createDocType() {
+  const code = document.getElementById('dt-new-code').value.trim();
+  const name = document.getElementById('dt-new-name').value.trim();
+  const icon = document.getElementById('dt-new-icon').value.trim() || 'description';
+  const volume = document.getElementById('dt-new-volume').value.trim();
+  const sort = Number(document.getElementById('dt-new-sort').value || 10);
+  if (!code || !name) {
+    alert('กรอก code และชื่อ');
+    return;
+  }
+  const r = await api('/api/document-types', {
+    method: 'POST',
+    body: JSON.stringify({
+      code, name, icon,
+      monthlyVolumeLabel: volume || null,
+      sortOrder: sort,
+    }),
+  });
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    alert('เพิ่มไม่สำเร็จ: ' + (j.error || r.status));
+    return;
+  }
+  document.getElementById('dt-new-code').value = '';
+  document.getElementById('dt-new-name').value = '';
+  document.getElementById('dt-new-icon').value = '';
+  document.getElementById('dt-new-volume').value = '';
+  await loadDocTypesAdmin();
+  // refresh Step 1 dropdowns too
+  const dtR = await api('/api/document-types');
+  if (dtR.ok) { docTypes = (await dtR.json()).types; renderSlots(); }
+}
+
+async function deleteDocType(id) {
+  if (!confirm('ปิดใช้งานประเภทนี้?')) return;
+  const r = await api(`/api/document-types/${id}`, { method: 'DELETE' });
+  if (r.ok) {
+    await loadDocTypesAdmin();
+    const dtR = await api('/api/document-types');
+    if (dtR.ok) { docTypes = (await dtR.json()).types; renderSlots(); }
+  }
+}
+
+async function reactivateDocType(id) {
+  const r = await api(`/api/document-types/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ active: 1 }),
+  });
+  if (r.ok) {
+    await loadDocTypesAdmin();
+    const dtR = await api('/api/document-types');
+    if (dtR.ok) { docTypes = (await dtR.json()).types; renderSlots(); }
+  }
+}
+
+// ----- Cost settings master (admin tab) -----
+async function loadCostSettingsAdmin() {
+  const r = await api('/api/cost-settings');
+  if (!r.ok) {
+    alert('โหลดล้มเหลว');
+    return;
+  }
+  const cs = await r.json();
+  document.getElementById('cs-usd').value = cs.usdToThb;
+  document.getElementById('cs-ppf').value = cs.pagesPerFile;
+  document.getElementById('cs-oin').value = cs.ocrInputTokensPerPage;
+  document.getElementById('cs-oout').value = cs.ocrOutputTokensPerPage;
+  document.getElementById('cs-min').value = cs.matchingInputTokens;
+  document.getElementById('cs-mout').value = cs.matchingOutputTokens;
+
+  // matching provider dropdown
+  const provR = await api('/api/ai/providers');
+  const provs = provR.ok ? (await provR.json()).providers : [];
+  const mprov = document.getElementById('cs-mprov');
+  mprov.innerHTML = '<option value="">— ใช้ provider เดียวกับ OCR —</option>' +
+    provs.map(p => `<option value="${p.id}" ${p.id === cs.matchingProviderId ? 'selected' : ''}>${escapeHtml(p.displayName)}</option>`).join('');
+
+  // overrides
+  const wrap = document.getElementById('cs-overrides');
+  wrap.innerHTML = provs.map(p => {
+    const eff = cs.effectiveCosts[p.id];
+    const isOverride = eff?.source === 'override';
+    return `
+      <div class="p-2 rounded-lg border ${isOverride ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-slate-50'}">
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-medium text-[11px] text-slate-700">${escapeHtml(p.displayName)}</span>
+          ${isOverride
+            ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-200 text-amber-800 font-semibold">OVERRIDE</span>'
+            : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-600">DEFAULT</span>'}
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[9px] text-slate-500">Input THB/1k</label>
+            <input type="number" step="0.0001" min="0" id="cs-ov-in-${p.id}" value="${eff.inputCostPer1k.toFixed(6)}" style="width:100%;font-size:11px">
+          </div>
+          <div>
+            <label class="block text-[9px] text-slate-500">Output THB/1k</label>
+            <input type="number" step="0.0001" min="0" id="cs-ov-out-${p.id}" value="${eff.outputCostPer1k.toFixed(6)}" style="width:100%;font-size:11px">
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function saveCostSettings() {
+  const provR = await api('/api/ai/providers');
+  const provs = provR.ok ? (await provR.json()).providers : [];
+
+  // Build provider_overrides only for entries that differ from default
+  const overrides = {};
+  for (const p of provs) {
+    const inV = Number(document.getElementById(`cs-ov-in-${p.id}`)?.value);
+    const outV = Number(document.getElementById(`cs-ov-out-${p.id}`)?.value);
+    if (Number.isFinite(inV) && Number.isFinite(outV)) {
+      // only include if differs from registry default
+      const diffIn = Math.abs(inV - p.inputCostPer1k) > 1e-9;
+      const diffOut = Math.abs(outV - p.outputCostPer1k) > 1e-9;
+      if (diffIn || diffOut) {
+        overrides[p.id] = { inputCostPer1k: inV, outputCostPer1k: outV };
+      }
+    }
+  }
+
+  const body = {
+    usdToThb: Number(document.getElementById('cs-usd').value),
+    pagesPerFile: Number(document.getElementById('cs-ppf').value),
+    ocrInputTokensPerPage: Number(document.getElementById('cs-oin').value),
+    ocrOutputTokensPerPage: Number(document.getElementById('cs-oout').value),
+    matchingInputTokens: Number(document.getElementById('cs-min').value),
+    matchingOutputTokens: Number(document.getElementById('cs-mout').value),
+    matchingProviderId: document.getElementById('cs-mprov').value || null,
+    providerOverrides: overrides,
+  };
+
+  const r = await api('/api/cost-settings', {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    alert('บันทึกไม่สำเร็จ: ' + (j.error || r.status));
+    return;
+  }
+  alert('✓ บันทึก cost config แล้ว');
+  // refresh Step 1 cost panel
+  const csR = await api('/api/cost-settings');
+  if (csR.ok) {
+    costSettings = await csR.json();
+    renderAiProviderRadios();
+    renderCostBreakdown();
+  }
+  await loadCostSettingsAdmin();
+}
+
+// ----- real OCR test in step 2 -----
+async function runRealOCR(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('real-ocr-status');
+  const result = document.getElementById('real-ocr-result');
+  status.innerHTML = '<span class="spinner"></span> กำลังเรียก API...';
+  result.innerHTML = '';
+  const fd = new FormData();
+  fd.append('file', file);
+  // Use the provider chosen via radio in Step 1 (override the tenant default)
+  const url = selectedProviderId
+    ? `/api/ocr/extract?provider=${encodeURIComponent(selectedProviderId)}`
+    : '/api/ocr/extract';
+  try {
+    const r = await fetch(url, { method: 'POST', body: fd, credentials: 'include' });
+    const j = await r.json();
+    if (!r.ok) {
+      status.innerHTML = `<span class="text-rose-600">❌ ${j.error || ('HTTP ' + r.status)}</span>`;
+      return;
+    }
+    const fb = j.fellBackFrom ? ` (fallback จาก ${j.fellBackFrom})` : '';
+    status.innerHTML = `<span class="text-emerald-600">✓ ${j.providerUsed}${fb} · ${j.latencyMs}ms · avg ${(j.avgConfidence*100).toFixed(0)}% · ฿${j.costThb.toFixed(4)}</span>`;
+    result.innerHTML = `
+      <div class="mt-3 overflow-hidden rounded-xl border">
+        <table class="w-full text-[11px]">
+          <thead class="bg-slate-50"><tr>
+            <th class="p-2 text-left text-slate-500 font-medium">ฟิลด์</th>
+            <th class="p-2 text-left text-slate-500 font-medium">ค่า</th>
+            <th class="p-2 text-center text-slate-500 font-medium w-12">%</th>
+          </tr></thead>
+          <tbody>
+            ${j.fields.map(f => {
+              const c = Math.round(f.confidence * 100);
+              const tone = c >= 90 ? '#059669' : c >= 70 ? '#b45309' : '#dc2626';
+              return `<tr>
+                <td class="p-2 text-slate-500">${f.key}</td>
+                <td class="p-2 mono text-[10.5px]">${f.value || '<em class="text-slate-300">—</em>'}</td>
+                <td class="p-2 text-center" style="color:${tone};font-weight:600">${c}%</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <details class="mt-2 text-[10px] text-slate-500">
+        <summary class="cursor-pointer">ดู raw text</summary>
+        <pre class="mt-1 p-2 rounded bg-slate-900 text-emerald-300 overflow-auto" style="max-height:120px">${(j.rawText || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</pre>
+      </details>
+    `;
+  } catch (e) {
+    status.innerHTML = `<span class="text-rose-600">❌ ${e.message}</span>`;
+  }
+}
+
+// ===========================
+//  INIT
+// ===========================
+goTo(1);
+checkAuth();
+</script>
+</body>
+</html>

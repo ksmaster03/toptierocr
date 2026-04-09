@@ -1,0 +1,10 @@
+node_modules
+.git
+.env
+.env.local
+uploads
+seekdb-data
+test-results
+playwright-report
+tests
+*.log
