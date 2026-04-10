@@ -10,6 +10,7 @@ ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY src ./src
 COPY Toptier-AI-OCR-v2.html ./
+COPY logo.png ./
 COPY package.json ./
 COPY tsconfig.json ./
 

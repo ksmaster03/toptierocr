@@ -39,6 +39,16 @@ app.get('/', async (c) => {
   return c.html(html)
 })
 
+// Public brand logo (no auth — used by login page).
+app.get('/logo.png', async (c) => {
+  const file = Bun.file('./logo.png')
+  const buf = await file.arrayBuffer()
+  return c.body(buf, 200, {
+    'content-type': 'image/png',
+    'cache-control': 'public, max-age=86400',
+  })
+})
+
 app.onError((err, c) => {
   console.error('[unhandled]', err)
   return c.json({ error: err.message }, 500)
