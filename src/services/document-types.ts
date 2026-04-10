@@ -115,4 +115,16 @@ export const documentTypeService = {
         and(eq(documentTypes.tenantId, tenantId), eq(documentTypes.id, id)),
       )
   },
+
+  /**
+   * Hard delete — physically removes the row. Existing batches/invoices that
+   * reference the code as a string snapshot are unaffected.
+   */
+  async hardDelete(tenantId: number, id: number): Promise<void> {
+    await db
+      .delete(documentTypes)
+      .where(
+        and(eq(documentTypes.tenantId, tenantId), eq(documentTypes.id, id)),
+      )
+  },
 }

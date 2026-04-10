@@ -79,9 +79,23 @@ documentTypeRoutes.put(
   },
 )
 
+/**
+ * DELETE /:id
+ *   default                → soft delete (active=0)
+ *   ?hard=1 query string   → hard delete (row removed)
+ *
+ * Hard delete is allowed even if existing batches/invoices reference the
+ * code, because the batches store the code as a string snapshot — they
+ * keep working, just without a master row to look up.
+ */
 documentTypeRoutes.delete('/:id', requireRole('admin'), async (c) => {
   const id = Number(c.req.param('id'))
   if (!Number.isInteger(id)) return c.json({ error: 'bad id' }, 400)
-  await documentTypeService.softDelete(tenantIdOf(c), id)
-  return c.json({ ok: true })
+  const hard = c.req.query('hard') === '1'
+  if (hard) {
+    await documentTypeService.hardDelete(tenantIdOf(c), id)
+  } else {
+    await documentTypeService.softDelete(tenantIdOf(c), id)
+  }
+  return c.json({ ok: true, deleted: hard ? 'hard' : 'soft' })
 })

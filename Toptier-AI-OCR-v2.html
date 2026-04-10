@@ -223,7 +223,7 @@ textarea{resize:vertical}
 <div id="login-overlay" class="fixed inset-0 z-50 items-center justify-center p-4" style="display:flex">
   <div class="login-card card p-8" style="width:100%;max-width:420px">
     <div class="flex flex-col items-center text-center mb-6">
-      <img src="/logo.png" alt="Toptier Digital" style="height:64px;width:auto;max-width:220px;object-fit:contain;margin-bottom:8px" onerror="this.style.display='none'">
+      <img src="/logo.png" alt="Toptier Digital" style="height:96px;width:auto;max-width:280px;object-fit:contain;margin-bottom:12px" onerror="this.style.display='none'">
       <h1 class="font-bold text-base text-slate-700 leading-tight">AI OCR System</h1>
       <p class="text-xs text-slate-500 mt-1">ระบบประมวลผลใบกำกับภาษีด้วย AI</p>
     </div>
@@ -340,26 +340,34 @@ textarea{resize:vertical}
       <div class="border-t pt-3">
         <div class="font-semibold text-slate-700 mb-2 flex items-center gap-1.5"><span class="ms ms-sm">add_circle</span> เพิ่มประเภทใหม่</div>
         <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[10px] text-slate-500 mb-0.5">Code (a-z, _, -)</label>
-            <input id="dt-new-code" type="text" placeholder="freight" style="width:100%">
-          </div>
-          <div>
-            <label class="block text-[10px] text-slate-500 mb-0.5">Material icon name</label>
-            <input id="dt-new-icon" type="text" placeholder="local_shipping" style="width:100%">
-          </div>
           <div class="col-span-2">
-            <label class="block text-[10px] text-slate-500 mb-0.5">ชื่อ</label>
-            <input id="dt-new-name" type="text" placeholder="ค่าขนส่ง / Freight" style="width:100%">
+            <label class="block text-[10px] text-slate-500 mb-0.5">ชื่อประเภท <span class="text-rose-500">*</span></label>
+            <input id="dt-new-name" type="text" placeholder="เช่น ค่าขนส่ง, Freight, Office Supply..." style="width:100%" oninput="autoFillDocType()">
           </div>
           <div>
-            <label class="block text-[10px] text-slate-500 mb-0.5">ปริมาณ/เดือน (label)</label>
+            <label class="block text-[10px] text-slate-500 mb-0.5">
+              Code <span class="text-slate-400 font-normal">(auto)</span>
+            </label>
+            <input id="dt-new-code" type="text" placeholder="auto-generated" style="width:100%">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-0.5 flex items-center gap-1">
+              Icon <span class="text-slate-400 font-normal">(auto)</span>
+              <span id="dt-icon-preview" class="ms ms-sm text-sky-600"></span>
+            </label>
+            <input id="dt-new-icon" type="text" placeholder="auto-suggested" style="width:100%" oninput="updateIconPreview()">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-0.5">ปริมาณ/เดือน <span class="text-slate-400 font-normal">(optional)</span></label>
             <input id="dt-new-volume" type="text" placeholder="500 inv/เดือน" style="width:100%">
           </div>
           <div>
             <label class="block text-[10px] text-slate-500 mb-0.5">Sort order</label>
             <input id="dt-new-sort" type="number" min="0" max="9999" value="10" style="width:100%">
           </div>
+        </div>
+        <div class="text-[10px] text-slate-400 mt-2 italic">
+          💡 Code และ Icon จะถูกเดาให้อัตโนมัติจากชื่อ — แก้ไขได้ถ้าต้องการ
         </div>
         <div class="text-right mt-2">
           <button class="btn btn-sky text-[11px]" onclick="createDocType()"><span class="ms ms-sm">add</span> เพิ่ม</button>
@@ -418,8 +426,8 @@ textarea{resize:vertical}
 
 <!-- HEADER -->
 <header class="sticky top-0 z-40 glass border-b border-slate-200">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-    <img src="/logo.png" alt="Toptier Digital" style="height:40px;width:auto;max-width:140px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+    <img src="/logo.png" alt="Toptier Digital" style="height:56px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">
     <div class="flex-1 min-w-0">
       <h1 class="font-semibold text-base leading-tight truncate">ระบบ AI OCR + AI Matching สำหรับ Invoice Processing</h1>
       <p class="text-xs text-slate-400" id="hdr-sub">อัปโหลด → OCR (Claude Vision) → AI Matching → ตรวจสอบ → ส่งข้อมูล</p>
@@ -3190,6 +3198,110 @@ function showToast(message, kind = 'info') {
 }
 
 // ----- Document type master (admin tab) -----
+// ===========================
+//  DOC TYPE MASTER (CRUD)
+// ===========================
+
+// Map of Thai/English keywords → Material icon name. First match wins.
+// Keep the list ordered from most-specific → most-generic.
+const ICON_KEYWORD_MAP = [
+  // Vehicles & logistics
+  ['ขนส่ง|freight|logistic|shipping|delivery|truck', 'local_shipping'],
+  ['น้ำมัน|fuel|gas|gasoline|diesel|ปิโตร', 'local_gas_station'],
+  ['ยานพาหนะ|vehicle|รถ|car|motorcycle|มอเตอร์', 'directions_car'],
+  ['flight|airplane|เครื่องบิน', 'flight'],
+  // Office & supplies
+  ['สำนักงาน|office|paper|กระดาษ|toner|ink|เครื่องเขียน', 'business_center'],
+  ['คอมพิวเตอร์|computer|laptop|notebook|ไอที|it equipment', 'computer'],
+  ['phone|โทรศัพท์|มือถือ|mobile', 'phone_iphone'],
+  // Materials & inventory
+  ['stock|วัสดุ|material|inventory|คงคลัง|warehouse|คลัง', 'inventory_2'],
+  ['อะไหล่|spare\\s*part|parts|component', 'settings'],
+  ['เหล็ก|steel|metal', 'foundation'],
+  // Services & maintenance
+  ['ซ่อม|repair|maintenance|maintain|บำรุง', 'build'],
+  ['ทำความสะอาด|cleaning|janitor', 'cleaning_services'],
+  ['security|รักษาความปลอดภัย|รปภ', 'shield'],
+  // Utilities
+  ['ไฟฟ้า|electric|electricity|power', 'bolt'],
+  ['น้ำ|water|aqua', 'water_drop'],
+  ['internet|อินเตอร์เน็ต|network|wifi', 'wifi'],
+  // Food, hospitality
+  ['อาหาร|food|catering|restaurant', 'restaurant'],
+  ['โรงแรม|hotel|accommodation|ที่พัก', 'hotel'],
+  // Finance / general
+  ['ภาษี|tax|vat', 'receipt_long'],
+  ['ค่าธรรมเนียม|fee|service\\s*charge', 'payments'],
+  ['ค่าใช้จ่าย|expense|gp|general\\s*purchase|purchase|จัดซื้อ', 'work'],
+  ['transaction|รายการ|ธุรกรรม', 'credit_card'],
+  ['invoice|ใบแจ้งหนี้|ใบเสร็จ|receipt', 'receipt'],
+  ['contract|สัญญา', 'description'],
+];
+
+/**
+ * Suggest a Material icon name from a Thai/English doc type name.
+ * Returns 'description' as a safe default.
+ */
+function suggestIcon(name) {
+  if (!name) return 'description';
+  const lower = name.toLowerCase();
+  for (const [pattern, icon] of ICON_KEYWORD_MAP) {
+    if (new RegExp(pattern, 'i').test(lower)) return icon;
+  }
+  return 'description';
+}
+
+/**
+ * Slugify a name into an ASCII-safe code (a-z, 0-9, hyphens).
+ * Falls back to 'doc-<timestamp>' if the name is purely Thai or non-ASCII.
+ */
+function slugifyCode(name) {
+  if (!name) return '';
+  // 1. Try to preserve ASCII letters/digits/hyphens
+  let slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s\-_]/g, '')   // strip Thai + symbols
+    .trim()
+    .replace(/[\s_]+/g, '-')          // spaces → hyphens
+    .replace(/-+/g, '-')              // collapse hyphens
+    .replace(/^-|-$/g, '');           // trim hyphens
+  if (slug.length > 0) return slug.slice(0, 32);
+  // 2. Pure Thai name → fall back
+  return 'doc-' + Date.now().toString(36).slice(-6);
+}
+
+/** Triggered as user types the name field — fills code + icon if empty. */
+function autoFillDocType() {
+  const name = document.getElementById('dt-new-name').value;
+  const codeEl = document.getElementById('dt-new-code');
+  const iconEl = document.getElementById('dt-new-icon');
+
+  // Only auto-fill if user hasn't manually edited (data attribute marks dirty)
+  if (!codeEl.dataset.dirty) {
+    codeEl.value = slugifyCode(name);
+  }
+  if (!iconEl.dataset.dirty) {
+    iconEl.value = suggestIcon(name);
+  }
+  updateIconPreview();
+}
+
+// Mark fields dirty when user types in them so auto-fill stops overwriting
+document.addEventListener('input', (e) => {
+  if (e.target?.id === 'dt-new-code' || e.target?.id === 'dt-new-icon') {
+    e.target.dataset.dirty = '1';
+  }
+});
+
+function updateIconPreview() {
+  const iconEl = document.getElementById('dt-new-icon');
+  const preview = document.getElementById('dt-icon-preview');
+  if (preview && iconEl) preview.textContent = iconEl.value || '';
+}
+
+// State for inline editing — id of the row currently being edited
+let editingDocTypeId = null;
+
 async function loadDocTypesAdmin() {
   const wrap = document.getElementById('cfg-doctype-list');
   if (!wrap) return;
@@ -3204,24 +3316,144 @@ async function loadDocTypesAdmin() {
     wrap.innerHTML = '<div class="text-[11px] text-slate-400 italic">ยังไม่มีประเภทเอกสาร</div>';
     return;
   }
-  wrap.innerHTML = types.map(t => `
-    <div class="p-3 rounded-lg border ${t.active ? 'bg-white' : 'bg-slate-50 opacity-60'} flex items-center gap-3">
-      <span class="ms ms-lg text-sky-600">${escapeHtml(t.icon || 'description')}</span>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2">
-          <span class="font-semibold text-[12px] text-slate-700 truncate">${escapeHtml(t.name)}</span>
-          <span class="text-[9px] mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">${escapeHtml(t.code)}</span>
-          ${t.active ? '' : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-500">ไม่ใช้งาน</span>'}
+  wrap.innerHTML = types.map(t => {
+    if (editingDocTypeId === t.id) {
+      // INLINE EDIT MODE
+      return `
+        <div class="p-3 rounded-lg border-2 border-sky-400 bg-sky-50">
+          <div class="grid grid-cols-2 gap-2">
+            <div class="col-span-2">
+              <label class="block text-[10px] text-slate-500 mb-0.5">ชื่อ</label>
+              <input id="dt-edit-name-${t.id}" type="text" value="${escapeHtml(t.name)}" style="width:100%">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-500 mb-0.5">Code</label>
+              <input id="dt-edit-code-${t.id}" type="text" value="${escapeHtml(t.code)}" style="width:100%" disabled title="Code แก้ไขไม่ได้หลังสร้าง">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-500 mb-0.5 flex items-center gap-1">
+                Icon <span class="ms ms-sm text-sky-600">${escapeHtml(t.icon || 'description')}</span>
+              </label>
+              <input id="dt-edit-icon-${t.id}" type="text" value="${escapeHtml(t.icon || 'description')}" style="width:100%">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-500 mb-0.5">ปริมาณ/เดือน</label>
+              <input id="dt-edit-volume-${t.id}" type="text" value="${escapeHtml(t.monthlyVolumeLabel || '')}" style="width:100%">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-500 mb-0.5">Sort order</label>
+              <input id="dt-edit-sort-${t.id}" type="number" value="${t.sortOrder || 0}" style="width:100%">
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 mt-2">
+            <button class="btn btn-ghost text-[11px]" onclick="cancelEditDocType()">
+              <span class="ms ms-sm">close</span> ยกเลิก
+            </button>
+            <button class="btn btn-sky text-[11px]" onclick="saveEditDocType(${t.id})">
+              <span class="ms ms-sm">save</span> บันทึก
+            </button>
+          </div>
         </div>
-        <div class="text-[10px] text-slate-500 mt-0.5 truncate">${escapeHtml(t.monthlyVolumeLabel || '')}</div>
+      `;
+    }
+    // VIEW MODE
+    const isActive = !!t.active;
+    return `
+      <div class="p-3 rounded-lg border ${isActive ? 'bg-white' : 'bg-slate-50 opacity-70'} flex items-center gap-3">
+        <span class="ms ms-lg text-sky-600">${escapeHtml(t.icon || 'description')}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-[12px] text-slate-700 truncate">${escapeHtml(t.name)}</span>
+            <span class="text-[9px] mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">${escapeHtml(t.code)}</span>
+            ${isActive
+              ? '<span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="background:#dcfce7;color:#166534">active</span>'
+              : '<span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="background:#e2e8f0;color:#64748b">inactive</span>'}
+          </div>
+          <div class="text-[10px] text-slate-500 mt-0.5 truncate">${escapeHtml(t.monthlyVolumeLabel || '')}</div>
+        </div>
+        <div class="flex gap-1 flex-shrink-0">
+          <button class="text-sky-600 hover:text-sky-700 p-1" onclick="startEditDocType(${t.id})" title="แก้ไข">
+            <span class="ms ms-sm">edit</span>
+          </button>
+          ${isActive
+            ? `<button class="text-amber-600 hover:text-amber-700 p-1" onclick="toggleDocTypeActive(${t.id}, false)" title="ปิดใช้งาน">
+                 <span class="ms ms-sm">toggle_on</span>
+               </button>`
+            : `<button class="text-emerald-600 hover:text-emerald-700 p-1" onclick="toggleDocTypeActive(${t.id}, true)" title="เปิดใช้งาน">
+                 <span class="ms ms-sm">toggle_off</span>
+               </button>`}
+          <button class="text-rose-500 hover:text-rose-600 p-1" onclick="hardDeleteDocType(${t.id}, '${escapeHtml(t.name).replace(/'/g, "\\'")}')" title="ลบถาวร">
+            <span class="ms ms-sm">delete_forever</span>
+          </button>
+        </div>
       </div>
-      <div class="flex gap-1">
-        ${t.active
-          ? `<button class="text-rose-500 hover:text-rose-600 p-1" onclick="deleteDocType(${t.id})" title="ปิดใช้งาน"><span class="ms ms-sm">delete</span></button>`
-          : `<button class="text-emerald-600 hover:text-emerald-700 p-1" onclick="reactivateDocType(${t.id})" title="เปิดใช้งาน"><span class="ms ms-sm">restart_alt</span></button>`}
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+}
+
+function startEditDocType(id) {
+  editingDocTypeId = id;
+  loadDocTypesAdmin();
+}
+
+function cancelEditDocType() {
+  editingDocTypeId = null;
+  loadDocTypesAdmin();
+}
+
+async function saveEditDocType(id) {
+  const name = document.getElementById(`dt-edit-name-${id}`)?.value.trim();
+  const icon = document.getElementById(`dt-edit-icon-${id}`)?.value.trim() || 'description';
+  const volume = document.getElementById(`dt-edit-volume-${id}`)?.value.trim();
+  const sort = Number(document.getElementById(`dt-edit-sort-${id}`)?.value || 0);
+  if (!name) { showToast('กรอกชื่อ', 'error'); return; }
+  const r = await api(`/api/document-types/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      name, icon,
+      monthlyVolumeLabel: volume || null,
+      sortOrder: sort,
+    }),
+  });
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    showToast('บันทึกไม่สำเร็จ: ' + (j.error || r.status), 'error');
+    return;
+  }
+  showToast('บันทึกการแก้ไขแล้ว', 'success');
+  editingDocTypeId = null;
+  await loadDocTypesAdmin();
+  await refreshDocTypesEverywhere();
+}
+
+async function toggleDocTypeActive(id, makeActive) {
+  const r = await api(`/api/document-types/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ active: makeActive ? 1 : 0 }),
+  });
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    showToast('toggle ล้มเหลว: ' + (j.error || r.status), 'error');
+    return;
+  }
+  showToast(`${makeActive ? 'เปิด' : 'ปิด'}ใช้งานประเภทนี้แล้ว`, 'success');
+  await loadDocTypesAdmin();
+  await refreshDocTypesEverywhere();
+}
+
+async function hardDeleteDocType(id, name) {
+  if (!confirm(`ลบประเภทนี้ "${name}" อย่างถาวร?\n\nไม่สามารถกู้คืนได้ (rows ใน batches/invoices ที่ใช้ code นี้จะยังเก็บข้อมูล code เดิมไว้)`)) {
+    return;
+  }
+  const r = await api(`/api/document-types/${id}?hard=1`, { method: 'DELETE' });
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    showToast('ลบไม่สำเร็จ: ' + (j.error || r.status), 'error');
+    return;
+  }
+  showToast(`ลบ "${name}" แล้ว`, 'success');
+  await loadDocTypesAdmin();
+  await refreshDocTypesEverywhere();
 }
 
 async function createDocType() {
@@ -3230,10 +3462,9 @@ async function createDocType() {
   const icon = document.getElementById('dt-new-icon').value.trim() || 'description';
   const volume = document.getElementById('dt-new-volume').value.trim();
   const sort = Number(document.getElementById('dt-new-sort').value || 10);
-  if (!code || !name) {
-    alert('กรอก code และชื่อ');
-    return;
-  }
+  if (!name) { showToast('กรอกชื่อประเภท', 'error'); return; }
+  if (!code) { showToast('Code ว่าง — ลองเปลี่ยนชื่อให้มีตัวอักษร ASCII หรือกรอก code เอง', 'error'); return; }
+
   const r = await api('/api/document-types', {
     method: 'POST',
     body: JSON.stringify({
@@ -3244,39 +3475,36 @@ async function createDocType() {
   });
   if (!r.ok) {
     const j = await r.json().catch(() => ({}));
-    alert('เพิ่มไม่สำเร็จ: ' + (j.error || r.status));
+    showToast('เพิ่มไม่สำเร็จ: ' + (j.error || r.status), 'error');
     return;
   }
-  document.getElementById('dt-new-code').value = '';
-  document.getElementById('dt-new-name').value = '';
-  document.getElementById('dt-new-icon').value = '';
-  document.getElementById('dt-new-volume').value = '';
-  await loadDocTypesAdmin();
-  // refresh Step 1 dropdowns too
-  const dtR = await api('/api/document-types');
-  if (dtR.ok) { docTypes = (await dtR.json()).types; renderSlots(); }
-}
+  showToast(`เพิ่ม "${name}" สำเร็จ`, 'success');
 
-async function deleteDocType(id) {
-  if (!confirm('ปิดใช้งานประเภทนี้?')) return;
-  const r = await api(`/api/document-types/${id}`, { method: 'DELETE' });
-  if (r.ok) {
-    await loadDocTypesAdmin();
-    const dtR = await api('/api/document-types');
-    if (dtR.ok) { docTypes = (await dtR.json()).types; renderSlots(); }
-  }
-}
-
-async function reactivateDocType(id) {
-  const r = await api(`/api/document-types/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ active: 1 }),
+  // Reset form (and clear dirty flags so auto-fill works again next time)
+  ['dt-new-code', 'dt-new-name', 'dt-new-icon', 'dt-new-volume'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; delete el.dataset.dirty; }
   });
-  if (r.ok) {
-    await loadDocTypesAdmin();
-    const dtR = await api('/api/document-types');
-    if (dtR.ok) { docTypes = (await dtR.json()).types; renderSlots(); }
+  document.getElementById('dt-new-sort').value = '10';
+  updateIconPreview();
+
+  await loadDocTypesAdmin();
+  await refreshDocTypesEverywhere();
+}
+
+/** Reload doc types in all the places that show them (Step 1 + bulk select). */
+async function refreshDocTypesEverywhere() {
+  const dtR = await api('/api/document-types');
+  if (!dtR.ok) return;
+  docTypes = (await dtR.json()).types;
+  // Bulk type select
+  const bulkSel = document.getElementById('bulk-type-select');
+  if (bulkSel) {
+    bulkSel.innerHTML = docTypes.map(t =>
+      `<option value="${t.code}">${escapeHtml(t.name)}</option>`).join('');
   }
+  renderSlots();
+  renderUploadUI();
 }
 
 // ----- Cost settings master (admin tab) -----
