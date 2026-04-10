@@ -59,7 +59,20 @@
       "Bash(gh --version)",
       "Bash(cloudflared --version)",
       "Bash(git --version)",
-      "Bash(ssh -V)"
+      "Bash(ssh -V)",
+      "Bash(curl -sS -X GET https://api.cloudflare.com/client/v4/user/tokens/verify -H 'Authorization: Bearer cfk_OT5OsRODWDj5FB8E7pBT5o5ZmrWatqMmwULhGBeD3de81969')",
+      "Bash(curl -sS https://api.cloudflare.com/client/v4/user/tokens/verify -H 'Authorization: Bearer cfut_a7lO9zF43GZI4tewSIuQxUBD9C9fHgHjl8OYGIHw53534060')",
+      "Bash(curl -sS 'https://api.cloudflare.com/client/v4/zones?name=toptierdigital.space' -H 'Authorization: Bearer cfut_a7lO9zF43GZI4tewSIuQxUBD9C9fHgHjl8OYGIHw53534060')",
+      "Bash(curl -sS --retry 3 --retry-delay 2 -X PUT https://api.cloudflare.com/client/v4/accounts/4c6c8d1276bd6349f9261b49ba54e422/cfd_tunnel/__TRACKED_VAR__/configurations -H 'Authorization: Bearer cfut_a7lO9zF43GZI4tewSIuQxUBD9C9fHgHjl8OYGIHw53534060' -H 'content-type: application/json' --data-binary @.aws-deploy/cf_config.json)",
+      "Bash(curl -sS https://toptierocr.toptierdigital.space/health -w '\\\\nHTTP %{http_code} | TLS=%{ssl_verify_result} | total=%{time_total}s\\\\n')",
+      "Bash(curl -sSI https://toptierocr.toptierdigital.space/ -w '\\\\nHTTP %{http_code} | total=%{time_total}s\\\\n')",
+      "Bash(curl -sS -X POST https://toptierocr.toptierdigital.space/api/auth/login -H 'content-type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin123\"}' -c /tmp/prod.cookies)",
+      "Bash(curl -sS https://toptierocr.toptierdigital.space/api/auth/me -b /tmp/prod.cookies)",
+      "Bash(curl -sS https://toptierocr.toptierdigital.space/api/ai/providers -b /tmp/prod.cookies)",
+      "Bash(curl -sS http://localhost:3737/api/cost-settings -b /tmp/admin.cookies)",
+      "Bash(curl -sS -X PUT http://localhost:3737/api/ai/providers/toggle -H 'content-type: application/json' -b /tmp/admin.cookies -d '{\"providerId\":\"gpt-4o\",\"active\":false}')",
+      "Bash(curl -sS -X PUT http://localhost:3737/api/ai/providers/toggle -H 'content-type: application/json' -b /tmp/admin.cookies -d '{\"providerId\":\"gemini-2.5-flash\",\"active\":false}')",
+      "Bash(curl -sS -X PUT http://localhost:3737/api/ai/providers/toggle -H 'content-type: application/json' -b /tmp/admin.cookies -d '{\"providerId\":\"gpt-4o\",\"active\":true}')"
     ],
     "additionalDirectories": [
       "\\tmp"

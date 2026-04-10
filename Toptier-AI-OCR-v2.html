@@ -1245,21 +1245,33 @@ async function initStep1() {
     docTypes = dtR.ok ? (await dtR.json()).types : [];
     costSettings = csR.ok ? await csR.json() : null;
 
-    // For demo (no admin perms on /api/ai/*), build providers list from cost-settings.effectiveCosts
+    // Admin gets full /api/ai/providers (registry info). Demo falls back to
+    // the providerInfo embedded in /api/cost-settings (same data, no pricing
+    // registry call needed).
     if (prR && prR.ok) {
-      aiProviders = (await prR.json()).providers;
+      const regList = (await prR.json()).providers;
       aiCfg = cfR && cfR.ok ? await cfR.json() : null;
-    } else if (costSettings) {
-      aiProviders = Object.entries(costSettings.effectiveCosts).map(([id, c]) => ({
-        id, displayName: id, vendor: 'unknown', tier: 'standard',
-        inputCostPer1k: c.inputCostPer1k, outputCostPer1k: c.outputCostPer1k,
-        description: '', supportsPdf: true,
+      // Merge active state from aiCfg (admin) or costSettings.providerInfo (fallback)
+      const activeMap = aiCfg?.activeProviders ?? {};
+      aiProviders = regList.map(p => ({
+        ...p,
+        active: activeMap[p.id] !== false,
+      }));
+    } else if (costSettings?.providerInfo) {
+      const eff = costSettings.effectiveCosts || {};
+      aiProviders = costSettings.providerInfo.map(p => ({
+        ...p,
+        inputCostPer1k: eff[p.id]?.inputCostPer1k ?? 0,
+        outputCostPer1k: eff[p.id]?.outputCostPer1k ?? 0,
       }));
       aiCfg = null;
     }
 
-    selectedProviderId = aiCfg?.ocrProviderId
-      ?? (aiProviders[0]?.id ?? null);
+    // Pick first ACTIVE provider, prefer the tenant's configured primary.
+    const active = aiProviders.filter(p => p.active !== false);
+    selectedProviderId = (aiCfg?.ocrProviderId && active.find(p => p.id === aiCfg.ocrProviderId))
+      ? aiCfg.ocrProviderId
+      : (active[0]?.id ?? null);
 
     // ensure at least one slot exists for manual mode
     if (uploadSlots.length === 0) {
@@ -1612,25 +1624,45 @@ function renderAiProviderRadios() {
     return;
   }
   wrap.innerHTML = aiProviders.map(p => {
-    const active = p.id === selectedProviderId;
+    const isSelected = p.id === selectedProviderId;
+    const isInactive = p.active === false;
     const tierColor = p.tier === 'free'
       ? 'background:#dbeafe;color:#1d4ed8'
       : p.tier === 'standard'
       ? 'background:#fef3c7;color:#b45309'
       : 'background:#fce7f3;color:#9d174d';
     const eff = costSettings?.effectiveCosts?.[p.id];
-    const inCost = eff ? eff.inputCostPer1k : p.inputCostPer1k;
-    const outCost = eff ? eff.outputCostPer1k : p.outputCostPer1k;
+    const inCost = eff ? eff.inputCostPer1k : (p.inputCostPer1k ?? 0);
+    const outCost = eff ? eff.outputCostPer1k : (p.outputCostPer1k ?? 0);
+
+    // Inactive state = grey, not selectable, no hover
+    let rowClass, extraStyle = '';
+    if (isInactive) {
+      rowClass = 'border-slate-200 bg-slate-100';
+      extraStyle = 'cursor:not-allowed;opacity:.55;';
+    } else if (isSelected) {
+      rowClass = 'border-sky-400 bg-sky-50';
+    } else {
+      rowClass = 'border-slate-200 bg-white hover:border-sky-300';
+    }
+
+    const inactiveBadge = isInactive
+      ? '<span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="background:#e2e8f0;color:#64748b">inactive</span>'
+      : '';
+
     return `
-      <label class="flex items-start gap-2 p-3 rounded-lg border cursor-pointer transition-all ${active
-        ? 'border-sky-400 bg-sky-50'
-        : 'border-slate-200 bg-white hover:border-sky-300'}">
-        <input type="radio" name="ai-provider" value="${p.id}" ${active ? 'checked' : ''}
+      <label class="flex items-start gap-2 p-3 rounded-lg border transition-all ${rowClass}"
+             style="${isInactive ? extraStyle : 'cursor:pointer'}"
+             title="${isInactive ? 'Provider ถูกปิดการใช้งานโดย admin' : ''}">
+        <input type="radio" name="ai-provider" value="${p.id}"
+               ${isSelected ? 'checked' : ''}
+               ${isInactive ? 'disabled' : ''}
                onchange="selectAiProvider('${p.id}')" class="mt-0.5">
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-1.5">
-            <span class="font-semibold text-[12px] text-slate-700 truncate">${escapeHtml(p.displayName)}</span>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="font-semibold text-[12px] ${isInactive ? 'text-slate-500' : 'text-slate-700'} truncate">${escapeHtml(p.displayName)}</span>
             <span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="${tierColor}">${p.tier}</span>
+            ${inactiveBadge}
           </div>
           <div class="text-[10px] text-slate-500 mt-0.5">${escapeHtml(p.description || '')}</div>
           <div class="text-[10px] text-slate-400 mono mt-1">
@@ -1643,6 +1675,9 @@ function renderAiProviderRadios() {
 }
 
 function selectAiProvider(id) {
+  // Ignore clicks on inactive providers
+  const p = aiProviders.find(x => x.id === id);
+  if (!p || p.active === false) return;
   selectedProviderId = id;
   renderAiProviderRadios();
   renderCostBreakdown();
@@ -2959,42 +2994,111 @@ async function loadSettings() {
     }
     const { providers } = await provR.json();
     const cfg = await cfgR.json();
+    const active = cfg.activeProviders || {};
 
     const primary = document.getElementById('cfg-primary');
     const fallback = document.getElementById('cfg-fallback');
 
-    primary.innerHTML = providers.map(p =>
+    // Primary/fallback selectors only show ACTIVE providers (otherwise admin
+    // could pick one that's disabled and nothing would work).
+    const activeProviders = providers.filter(p => active[p.id] !== false);
+    primary.innerHTML = activeProviders.map(p =>
       `<option value="${p.id}" ${p.id===cfg.ocrProviderId?'selected':''}>
         ${p.displayName} · ${p.tier} · ฿${p.inputCostPer1k.toFixed(4)}/1k in
       </option>`).join('');
 
-    fallback.innerHTML = '<option value="">— ไม่ใช้ fallback —</option>' + providers.map(p =>
+    fallback.innerHTML = '<option value="">— ไม่ใช้ fallback —</option>' + activeProviders.map(p =>
       `<option value="${p.id}" ${p.id===cfg.fallbackProviderId?'selected':''}>${p.displayName}</option>`).join('');
 
     document.getElementById('cfg-threshold').value = cfg.fallbackThreshold;
     document.getElementById('cfg-budget').value = cfg.monthlyBudgetThb;
 
+    // Provider cards with active toggle + API key field
     const credsBox = document.getElementById('cfg-creds');
     credsBox.innerHTML = providers.map(p => {
       const has = cfg.hasCredentialFor[p.id];
-      const status = has
-        ? '<span class="text-[10px] text-emerald-600">● มี key บันทึกแล้ว</span>'
-        : '<span class="text-[10px] text-slate-400">○ ยังไม่มี key</span>';
+      const isActive = active[p.id] !== false;
+      const isPrimary = cfg.ocrProviderId === p.id;
+      const isFallback = cfg.fallbackProviderId === p.id;
+      const cannotDisable = isPrimary || isFallback;
+      const keyStatus = has
+        ? '<span class="text-[10px] text-emerald-600">● มี key</span>'
+        : '<span class="text-[10px] text-slate-400">○ ไม่มี key</span>';
+      const activeBadge = isActive
+        ? '<span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="background:#dcfce7;color:#166534">active</span>'
+        : '<span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="background:#e2e8f0;color:#64748b">inactive</span>';
+      const roleBadge = isPrimary
+        ? '<span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="background:#dbeafe;color:#1d4ed8">primary</span>'
+        : isFallback
+        ? '<span class="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase" style="background:#fef3c7;color:#b45309">fallback</span>'
+        : '';
+
+      const toggleBtn = cannotDisable
+        ? `<button class="btn btn-ghost text-[10px]" disabled title="Provider ที่เป็น primary หรือ fallback ปิดไม่ได้ — เปลี่ยน primary ก่อน">
+             <span class="ms ms-sm">lock</span> ปิดไม่ได้
+           </button>`
+        : isActive
+        ? `<button class="btn text-[10px]" onclick="toggleProvider('${p.id}', false)" style="background:white;color:#dc2626;border-color:#fca5a5">
+             <span class="ms ms-sm">toggle_on</span> ปิด
+           </button>`
+        : `<button class="btn text-[10px]" onclick="toggleProvider('${p.id}', true)" style="background:white;color:#059669;border-color:#86efac">
+             <span class="ms ms-sm">toggle_off</span> เปิด
+           </button>`;
+
       return `
-        <div class="p-3 rounded-lg border bg-slate-50">
-          <div class="flex justify-between items-center mb-1.5">
-            <div class="font-medium text-[11px]">${p.displayName}</div>
-            ${status}
+        <div class="p-3 rounded-lg border ${isActive ? 'bg-slate-50' : 'bg-slate-100 opacity-75'}">
+          <div class="flex justify-between items-center mb-2 gap-2 flex-wrap">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="font-medium text-[11px]">${escapeHtml(p.displayName)}</span>
+              ${activeBadge}
+              ${roleBadge}
+            </div>
+            <div class="flex items-center gap-2">
+              ${keyStatus}
+              ${toggleBtn}
+            </div>
           </div>
           <div class="flex gap-2">
-            <input type="password" id="key-${p.id}" placeholder="${has?'(ป้อนเพื่ออัปเดต)':'ใส่ API key...'}" style="flex:1;font-size:11px">
-            <button class="btn btn-ghost text-[11px]" onclick="saveKey('${p.id}')">บันทึก</button>
+            <input type="password" id="key-${p.id}" placeholder="${has?'(ป้อนเพื่ออัปเดต)':'ใส่ API key...'}" style="flex:1;font-size:11px" ${isActive ? '' : 'disabled'}>
+            <button class="btn btn-ghost text-[11px]" onclick="saveKey('${p.id}')" ${isActive ? '' : 'disabled'}>บันทึก</button>
           </div>
         </div>
       `;
     }).join('');
   } catch (e) {
     alert('โหลด settings ล้มเหลว: ' + e.message);
+  }
+}
+
+async function toggleProvider(providerId, active) {
+  try {
+    const r = await api('/api/ai/providers/toggle', {
+      method: 'PUT',
+      body: JSON.stringify({ providerId, active }),
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      alert(j.error || 'toggle ล้มเหลว');
+      return;
+    }
+    await loadSettings();
+    // Refresh Step 1 radio list if user is viewing it
+    const provR = await api('/api/ai/providers');
+    const cfgR = await api('/api/ai/config');
+    if (provR.ok && cfgR.ok) {
+      const regList = (await provR.json()).providers;
+      aiCfg = await cfgR.json();
+      const actMap = aiCfg.activeProviders || {};
+      aiProviders = regList.map(p => ({ ...p, active: actMap[p.id] !== false }));
+      // If current selectedProviderId is now inactive, move to first active
+      if (selectedProviderId && actMap[selectedProviderId] === false) {
+        selectedProviderId = aiProviders.find(p => p.active)?.id ?? null;
+      }
+      renderAiProviderRadios();
+      renderCostBreakdown();
+    }
+  } catch (e) {
+    alert('เกิดข้อผิดพลาด: ' + e.message);
   }
 }
 

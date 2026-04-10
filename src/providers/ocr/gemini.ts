@@ -3,6 +3,7 @@ import {
   type OCRExtractInput,
   type OCRExtractResult,
   type ProviderInfo,
+  type ProviderTier,
   OCRProviderError,
 } from './types.ts'
 import { INVOICE_PROMPT, extractFieldsFromJson } from './prompt.ts'
@@ -11,33 +12,44 @@ import { INVOICE_PROMPT, extractFieldsFromJson } from './prompt.ts'
 // daily-accurate accounting.
 const USD_TO_THB = 36
 
-// Gemini 2.5 Flash list price (as of 2025-11): $0.30 / 1M input, $2.50 / 1M output
-// (gemini-2.0-flash free tier was discontinued; 2.5-flash is the current
-// free tier model with 250 RPD on the free tier.)
-const INPUT_USD_PER_1K = 0.0003
-const OUTPUT_USD_PER_1K = 0.0025
-const MODEL = 'gemini-2.5-flash'
-
-const INFO: ProviderInfo = {
-  id: 'gemini-2.5-flash',
-  displayName: 'Google Gemini 2.5 Flash',
-  vendor: 'google',
-  tier: 'free',
-  inputCostPer1k: INPUT_USD_PER_1K * USD_TO_THB,
-  outputCostPer1k: OUTPUT_USD_PER_1K * USD_TO_THB,
-  description: 'Free 250 req/วัน · มี thinking · ภาษาไทยดีมาก',
-  supportsPdf: true,
+interface GeminiVariant {
+  id: string
+  displayName: string
+  model: string
+  tier: ProviderTier
+  inputUsdPer1k: number
+  outputUsdPer1k: number
+  description: string
 }
 
+/**
+ * Factory: one class, two provider instances (Flash + Pro).
+ * Both share the identical HTTP contract — only model + pricing differ.
+ */
 export class GeminiOCRProvider implements AIOCRProvider {
-  readonly info = INFO
+  readonly info: ProviderInfo
+  private readonly model: string
+
+  constructor(variant: GeminiVariant) {
+    this.model = variant.model
+    this.info = {
+      id: variant.id,
+      displayName: variant.displayName,
+      vendor: 'google',
+      tier: variant.tier,
+      inputCostPer1k: variant.inputUsdPer1k * USD_TO_THB,
+      outputCostPer1k: variant.outputUsdPer1k * USD_TO_THB,
+      description: variant.description,
+      supportsPdf: true,
+    }
+  }
 
   async extract(
     input: OCRExtractInput,
     apiKey: string,
   ): Promise<OCRExtractResult> {
     const started = Date.now()
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${encodeURIComponent(apiKey)}`
 
     const base64 = Buffer.from(input.fileBuffer).toString('base64')
 
@@ -65,13 +77,13 @@ export class GeminiOCRProvider implements AIOCRProvider {
         body: JSON.stringify(body),
       })
     } catch (err) {
-      throw new OCRProviderError(INFO.id, 0, 'network error', err)
+      throw new OCRProviderError(this.info.id, 0, 'network error', err)
     }
 
     if (!res.ok) {
       const text = await res.text().catch(() => '')
       throw new OCRProviderError(
-        INFO.id,
+        this.info.id,
         res.status,
         `Gemini API ${res.status}: ${text.slice(0, 300)}`,
       )
@@ -91,7 +103,7 @@ export class GeminiOCRProvider implements AIOCRProvider {
       parsed = JSON.parse(text)
     } catch (err) {
       throw new OCRProviderError(
-        INFO.id,
+        this.info.id,
         500,
         `Gemini did not return valid JSON: ${text.slice(0, 200)}`,
         err,
@@ -101,8 +113,8 @@ export class GeminiOCRProvider implements AIOCRProvider {
     const inputTokens = payload.usageMetadata?.promptTokenCount ?? 0
     const outputTokens = payload.usageMetadata?.candidatesTokenCount ?? 0
     const costThb =
-      (inputTokens / 1000) * INFO.inputCostPer1k +
-      (outputTokens / 1000) * INFO.outputCostPer1k
+      (inputTokens / 1000) * this.info.inputCostPer1k +
+      (outputTokens / 1000) * this.info.outputCostPer1k
 
     const { fields, rawText, avgConfidence } = extractFieldsFromJson(parsed)
 
@@ -114,8 +126,30 @@ export class GeminiOCRProvider implements AIOCRProvider {
       outputTokens,
       costThb,
       latencyMs: Date.now() - started,
-      providerUsed: INFO.id,
+      providerUsed: this.info.id,
       avgConfidence,
     }
   }
+}
+
+/** Ready-to-use variant constants so the registry can just `new GeminiOCRProvider(GEMINI_FLASH)`. */
+export const GEMINI_FLASH: GeminiVariant = {
+  id: 'gemini-2.5-flash',
+  displayName: 'Google Gemini 2.5 Flash',
+  model: 'gemini-2.5-flash',
+  tier: 'free',
+  inputUsdPer1k: 0.0003,
+  outputUsdPer1k: 0.0025,
+  description: 'Free 250 req/วัน · มี thinking · ภาษาไทยดีมาก',
+}
+
+export const GEMINI_PRO: GeminiVariant = {
+  id: 'gemini-2.5-pro',
+  displayName: 'Google Gemini 2.5 Pro',
+  model: 'gemini-2.5-pro',
+  tier: 'premium',
+  // 2.5 Pro list: $1.25 / 1M input, $10 / 1M output (Oct 2025)
+  inputUsdPer1k: 0.00125,
+  outputUsdPer1k: 0.01,
+  description: 'แม่นยำสูงสุดของ Google · reasoning ดี · ราคาสูงกว่า Flash',
 }

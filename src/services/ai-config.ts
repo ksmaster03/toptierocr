@@ -10,6 +10,20 @@ export interface PublicAiConfig {
   fallbackThreshold: number
   monthlyBudgetThb: number
   hasCredentialFor: Record<string, boolean>
+  /** Provider IDs the admin has disabled for this tenant. */
+  disabledProviders: string[]
+  /** Convenience: enabled === !disabled */
+  activeProviders: Record<string, boolean>
+}
+
+function parseDisabled(raw: string | null): string[] {
+  if (!raw) return []
+  try {
+    const arr = JSON.parse(raw)
+    return Array.isArray(arr) ? arr.filter((x) => typeof x === 'string') : []
+  } catch {
+    return []
+  }
 }
 
 export const aiConfigService = {
@@ -37,13 +51,25 @@ export const aiConfigService = {
       ]),
     )
 
+    const disabledProviders = parseDisabled(cfg.disabledProviders)
+    const activeProviders = Object.fromEntries(
+      providerRegistry.list().map((p) => [p.id, !disabledProviders.includes(p.id)]),
+    )
+
     return {
       ocrProviderId: cfg.ocrProviderId,
       fallbackProviderId: cfg.fallbackProviderId,
       fallbackThreshold: Number(cfg.fallbackThreshold),
       monthlyBudgetThb: Number(cfg.monthlyBudgetThb),
       hasCredentialFor,
+      disabledProviders,
+      activeProviders,
     }
+  },
+
+  async isProviderActive(tenantId: number, providerId: string): Promise<boolean> {
+    const cfg = await this.getConfig(tenantId)
+    return cfg.activeProviders[providerId] === true
   },
 
   async updateConfig(
@@ -53,6 +79,7 @@ export const aiConfigService = {
       fallbackProviderId?: string | null
       fallbackThreshold?: number
       monthlyBudgetThb?: number
+      disabledProviders?: string[]
     },
   ) {
     if (patch.ocrProviderId && !providerRegistry.get(patch.ocrProviderId)) {
@@ -64,6 +91,13 @@ export const aiConfigService = {
     ) {
       throw new Error(`Unknown fallbackProviderId: ${patch.fallbackProviderId}`)
     }
+    if (patch.disabledProviders) {
+      for (const id of patch.disabledProviders) {
+        if (!providerRegistry.get(id)) {
+          throw new Error(`Unknown provider in disabledProviders: ${id}`)
+        }
+      }
+    }
 
     const update: Record<string, unknown> = {}
     if (patch.ocrProviderId !== undefined) update.ocrProviderId = patch.ocrProviderId
@@ -73,6 +107,8 @@ export const aiConfigService = {
       update.fallbackThreshold = String(patch.fallbackThreshold)
     if (patch.monthlyBudgetThb !== undefined)
       update.monthlyBudgetThb = String(patch.monthlyBudgetThb)
+    if (patch.disabledProviders !== undefined)
+      update.disabledProviders = JSON.stringify(patch.disabledProviders)
 
     if (Object.keys(update).length === 0) return
 
@@ -80,6 +116,31 @@ export const aiConfigService = {
       .update(aiConfigs)
       .set(update)
       .where(eq(aiConfigs.tenantId, tenantId))
+  },
+
+  /**
+   * Toggle a single provider's active state. Refuses to disable a provider
+   * that is currently the primary (ocrProviderId) or fallback.
+   */
+  async toggleProviderActive(
+    tenantId: number,
+    providerId: string,
+    active: boolean,
+  ): Promise<PublicAiConfig> {
+    if (!providerRegistry.get(providerId)) {
+      throw new Error(`Unknown provider: ${providerId}`)
+    }
+    const cfg = await this.getConfig(tenantId)
+    if (!active && (cfg.ocrProviderId === providerId || cfg.fallbackProviderId === providerId)) {
+      throw new Error(
+        `Cannot disable "${providerId}" — it is currently set as the primary or fallback. Switch to another provider first.`,
+      )
+    }
+    const set = new Set(cfg.disabledProviders)
+    if (active) set.delete(providerId)
+    else set.add(providerId)
+    await this.updateConfig(tenantId, { disabledProviders: [...set] })
+    return this.getConfig(tenantId)
   },
 
   /** Save / overwrite an API key for one provider, encrypted with master key. */

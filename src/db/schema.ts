@@ -56,6 +56,8 @@ export const aiConfigs = mysqlTable(
     monthlyBudgetThb: decimal('monthly_budget_thb', { precision: 10, scale: 2 })
       .notNull()
       .default('1000.00'),
+    /** JSON array of provider IDs disabled for this tenant (opt-out pattern). */
+    disabledProviders: text('disabled_providers'),
     updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
   },
   (t) => ({

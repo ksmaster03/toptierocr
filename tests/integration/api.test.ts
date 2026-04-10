@@ -143,14 +143,76 @@ describe('GET /api/document-types', () => {
 })
 
 describe('GET /api/cost-settings', () => {
-  it('returns effectiveCosts for both providers', async () => {
+  it('returns effectiveCosts for all 5 providers', async () => {
     const r = await fetch(`${BASE}/api/cost-settings`, { headers: { cookie: adminCookie } })
     expect(r.status).toBe(200)
     const j = await r.json()
     expect(j.effectiveCosts).toBeDefined()
     expect(j.effectiveCosts['gemini-2.5-flash']).toBeDefined()
+    expect(j.effectiveCosts['gemini-2.5-pro']).toBeDefined()
     expect(j.effectiveCosts['claude-haiku-4-5']).toBeDefined()
+    expect(j.effectiveCosts['gpt-4o']).toBeDefined()
+    expect(j.effectiveCosts['gpt-4o-mini']).toBeDefined()
     expect(typeof j.usdToThb).toBe('number')
+  })
+
+  it('includes providerInfo with per-tenant active state', async () => {
+    const r = await fetch(`${BASE}/api/cost-settings`, { headers: { cookie: adminCookie } })
+    const j = await r.json()
+    expect(Array.isArray(j.providerInfo)).toBe(true)
+    expect(j.providerInfo.length).toBe(5)
+    for (const p of j.providerInfo) {
+      expect(typeof p.id).toBe('string')
+      expect(typeof p.active).toBe('boolean')
+    }
+  })
+})
+
+describe('Provider active/inactive toggle', () => {
+  it('admin can toggle a non-primary/fallback provider', async () => {
+    // gpt-4o is not primary/fallback by default — should be toggleable
+    const r1 = await fetch(`${BASE}/api/ai/providers/toggle`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({ providerId: 'gpt-4o', active: false }),
+    })
+    expect(r1.status).toBe(200)
+    const j1 = await r1.json()
+    expect(j1.disabledProviders).toContain('gpt-4o')
+    expect(j1.activeProviders['gpt-4o']).toBe(false)
+
+    // Re-enable it
+    const r2 = await fetch(`${BASE}/api/ai/providers/toggle`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({ providerId: 'gpt-4o', active: true }),
+    })
+    expect(r2.status).toBe(200)
+    const j2 = await r2.json()
+    expect(j2.disabledProviders).not.toContain('gpt-4o')
+  })
+
+  it('refuses to disable the primary provider', async () => {
+    const cfgRes = await fetch(`${BASE}/api/ai/config`, { headers: { cookie: adminCookie } })
+    const cfg = await cfgRes.json()
+    const primary = cfg.ocrProviderId
+    const r = await fetch(`${BASE}/api/ai/providers/toggle`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({ providerId: primary, active: false }),
+    })
+    expect(r.status).toBe(400)
+    const j = await r.json()
+    expect(j.error).toMatch(/primary or fallback/)
+  })
+
+  it('demo cannot toggle providers → 403', async () => {
+    const r = await fetch(`${BASE}/api/ai/providers/toggle`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', cookie: demoCookie },
+      body: JSON.stringify({ providerId: 'gpt-4o', active: false }),
+    })
+    expect(r.status).toBe(403)
   })
 })
 

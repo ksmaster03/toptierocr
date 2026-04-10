@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../db/client.ts'
 import { costSettings } from '../db/schema.ts'
 import { providerRegistry } from '../providers/ocr/registry.ts'
+import { aiConfigService } from './ai-config.ts'
 
 /**
  * Per-tenant cost estimation parameters and provider price overrides.
@@ -26,6 +27,16 @@ export interface PublicCostSettings {
   providerOverrides: Record<string, ProviderCostOverride>
   /** Resolved (override OR registry default) costs per provider — what the UI should show. */
   effectiveCosts: Record<string, ProviderCostOverride & { source: 'override' | 'default' }>
+  /** Public registry data so non-admin users can render the Step 1 radio list. */
+  providerInfo: Array<{
+    id: string
+    displayName: string
+    vendor: string
+    tier: string
+    description: string
+    supportsPdf: boolean
+    active: boolean
+  }>
 }
 
 function parseOverrides(raw: string | null): Record<string, ProviderCostOverride> {
@@ -80,6 +91,27 @@ export const costSettingsService = {
 
     const overrides = parseOverrides(row.providerOverrides)
 
+    // Resolve per-tenant active state (from ai_configs.disabled_providers)
+    // so non-admin users can filter Step 1 provider radios.
+    let activeMap: Record<string, boolean> = {}
+    try {
+      const cfg = await aiConfigService.getConfig(tenantId)
+      activeMap = cfg.activeProviders
+    } catch {
+      // no ai_config yet — all active by default
+      for (const p of providerRegistry.list()) activeMap[p.id] = true
+    }
+
+    const providerInfo = providerRegistry.list().map((p) => ({
+      id: p.id,
+      displayName: p.displayName,
+      vendor: p.vendor,
+      tier: p.tier,
+      description: p.description,
+      supportsPdf: p.supportsPdf,
+      active: activeMap[p.id] !== false,
+    }))
+
     return {
       usdToThb: Number(row.usdToThb),
       ocrInputTokensPerPage: row.ocrInputTokensPerPage,
@@ -90,6 +122,7 @@ export const costSettingsService = {
       matchingProviderId: row.matchingProviderId,
       providerOverrides: overrides,
       effectiveCosts: buildEffective(overrides),
+      providerInfo,
     }
   },
 

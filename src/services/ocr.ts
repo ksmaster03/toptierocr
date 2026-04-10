@@ -59,6 +59,16 @@ export const ocrService = {
     fallbackFrom?: string,
   ): Promise<OCRExtractResult> {
     const provider = providerRegistry.require(providerId)
+
+    // Reject if admin has disabled this provider
+    const active = await aiConfigService.isProviderActive(tenantId, providerId)
+    if (!active) {
+      throw new Error(
+        `Provider "${providerId}" is inactive for this tenant. ` +
+          'Activate it in Admin → AI Provider settings.',
+      )
+    }
+
     const apiKey = await aiConfigService.loadDecryptedKey(tenantId, providerId)
     if (!apiKey) {
       throw new Error(
