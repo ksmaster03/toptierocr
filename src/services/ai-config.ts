@@ -143,7 +143,13 @@ export const aiConfigService = {
     return this.getConfig(tenantId)
   },
 
-  /** Save / overwrite an API key for one provider, encrypted with master key. */
+  /**
+   * Save / overwrite an API key for one provider, encrypted with master key.
+   *
+   * Uses atomic UPDATE-then-INSERT to avoid the race window where two
+   * concurrent saves both SELECT empty and both INSERT, hitting the
+   * (tenant_id, provider) unique constraint with ER_DUP_ENTRY.
+   */
   async saveCredential(
     tenantId: number,
     providerId: string,
@@ -159,38 +165,60 @@ export const aiConfigService = {
     const enc = encryptSecret(apiKey)
     const keyHint = maskSecret(apiKey)
 
-    // upsert per (tenant, provider)
-    const existing = await db
-      .select({ id: apiCredentials.id })
-      .from(apiCredentials)
+    // Try UPDATE first — works for both first save (0 rows) and overwrite.
+    const updateResult = await db
+      .update(apiCredentials)
+      .set({
+        cipherText: enc.cipherText,
+        iv: enc.iv,
+        authTag: enc.authTag,
+        keyHint,
+      })
       .where(
         and(
           eq(apiCredentials.tenantId, tenantId),
           eq(apiCredentials.provider, providerId),
         ),
       )
-      .limit(1)
 
-    if (existing[0]) {
-      await db
-        .update(apiCredentials)
-        .set({
+    // Drizzle returns mysql2's OkPacket as the first element of the result
+    const affectedRows =
+      (updateResult as unknown as [{ affectedRows?: number }])[0]?.affectedRows ?? 0
+
+    if (affectedRows === 0) {
+      // No existing row → INSERT. If a concurrent request beat us to it
+      // (race), the unique constraint will throw — catch and ignore because
+      // the other request already wrote a valid row for this (tenant, provider).
+      try {
+        await db.insert(apiCredentials).values({
+          tenantId,
+          provider: providerId,
           cipherText: enc.cipherText,
           iv: enc.iv,
           authTag: enc.authTag,
           keyHint,
         })
-        .where(eq(apiCredentials.id, existing[0].id))
-    } else {
-      await db.insert(apiCredentials).values({
-        tenantId,
-        provider: providerId,
-        cipherText: enc.cipherText,
-        iv: enc.iv,
-        authTag: enc.authTag,
-        keyHint,
-      })
+      } catch (err) {
+        const code = (err as { code?: string }).code
+        if (code !== 'ER_DUP_ENTRY') throw err
+        // Lost the race — overwrite the winner with our value
+        await db
+          .update(apiCredentials)
+          .set({
+            cipherText: enc.cipherText,
+            iv: enc.iv,
+            authTag: enc.authTag,
+            keyHint,
+          })
+          .where(
+            and(
+              eq(apiCredentials.tenantId, tenantId),
+              eq(apiCredentials.provider, providerId),
+            ),
+          )
+      }
     }
+
     return { keyHint }
   },
 

@@ -3076,9 +3076,10 @@ async function toggleProvider(providerId, active) {
     });
     if (!r.ok) {
       const j = await r.json().catch(() => ({}));
-      alert(j.error || 'toggle ล้มเหลว');
+      showToast(j.error || 'toggle ล้มเหลว', 'error');
       return;
     }
+    showToast(`${active ? 'เปิด' : 'ปิด'}ใช้งาน ${providerId} แล้ว`, 'success');
     await loadSettings();
     // Refresh Step 1 radio list if user is viewing it
     const provR = await api('/api/ai/providers');
@@ -3096,7 +3097,7 @@ async function toggleProvider(providerId, active) {
       renderCostBreakdown();
     }
   } catch (e) {
-    alert('เกิดข้อผิดพลาด: ' + e.message);
+    showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
   }
 }
 
@@ -3109,11 +3110,11 @@ async function saveConfig() {
   };
   const r = await api('/api/ai/config', { method: 'PUT', body: JSON.stringify(body) });
   if (r.ok) {
-    alert('✓ บันทึก config แล้ว');
+    showToast('บันทึก AI config สำเร็จ', 'success');
     await loadSettings();
   } else {
     const j = await r.json().catch(() => ({}));
-    alert('บันทึกไม่สำเร็จ: ' + (j.error || r.status));
+    showToast('บันทึกไม่สำเร็จ: ' + (j.error || ('HTTP ' + r.status)), 'error');
   }
 }
 
@@ -3121,20 +3122,71 @@ async function saveKey(providerId) {
   const input = document.getElementById(`key-${providerId}`);
   const apiKey = input.value;
   if (!apiKey || apiKey.length < 8) {
-    alert('API key สั้นเกินไป');
+    showToast('API key สั้นเกินไป (อย่างน้อย 8 ตัวอักษร)', 'error');
     return;
   }
-  const r = await api('/api/ai/credentials', {
-    method: 'PUT',
-    body: JSON.stringify({ providerId, apiKey })
-  });
-  if (r.ok) {
-    input.value = '';
-    await loadSettings();
-  } else {
-    const j = await r.json().catch(() => ({}));
-    alert('บันทึกไม่สำเร็จ: ' + (j.error || r.status));
+
+  // Find + lock the save button so user can't double-click
+  const btn = input.parentElement?.querySelector('button');
+  const oldHtml = btn?.innerHTML;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> กำลังบันทึก...';
   }
+  input.disabled = true;
+
+  try {
+    const r = await api('/api/ai/credentials', {
+      method: 'PUT',
+      body: JSON.stringify({ providerId, apiKey })
+    });
+    if (r.ok) {
+      const j = await r.json();
+      input.value = '';
+      showToast(`บันทึก API key สำหรับ ${providerId} สำเร็จ (${j.keyHint})`, 'success');
+      await loadSettings();
+    } else {
+      const j = await r.json().catch(() => ({}));
+      showToast('บันทึกไม่สำเร็จ: ' + (j.error || ('HTTP ' + r.status)), 'error');
+    }
+  } catch (e) {
+    showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = oldHtml || 'บันทึก';
+    }
+    input.disabled = false;
+  }
+}
+
+/**
+ * Tiny toast notification — auto-dismiss after 4s. Stacks if multiple
+ * fired in quick succession. Three styles: success / error / info.
+ */
+function showToast(message, kind = 'info') {
+  let host = document.getElementById('toast-host');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'toast-host';
+    host.style.cssText = 'position:fixed;top:16px;right:16px;z-index:100;display:flex;flex-direction:column;gap:8px;pointer-events:none';
+    document.body.appendChild(host);
+  }
+  const colors = {
+    success: { bg: '#ecfdf5', border: '#a7f3d0', text: '#065f46', icon: 'check_circle' },
+    error:   { bg: '#fef2f2', border: '#fecaca', text: '#991b1b', icon: 'error' },
+    info:    { bg: '#eff6ff', border: '#bfdbfe', text: '#1e3a8a', icon: 'info' },
+  };
+  const c = colors[kind] || colors.info;
+  const el = document.createElement('div');
+  el.style.cssText = `background:${c.bg};border:1px solid ${c.border};color:${c.text};padding:10px 14px;border-radius:10px;font-size:12px;font-weight:500;box-shadow:0 4px 14px rgba(15,23,42,.10);display:flex;align-items:center;gap:8px;min-width:240px;max-width:380px;pointer-events:auto;animation:fadeUp .25s ease forwards`;
+  el.innerHTML = `<span class="ms ms-sm">${c.icon}</span><span style="flex:1">${escapeHtml(message)}</span><button onclick="this.parentElement.remove()" style="background:transparent;border:0;color:${c.text};cursor:pointer;opacity:.6;font-size:14px;padding:0 4px">×</button>`;
+  host.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .3s';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
 }
 
 // ----- Document type master (admin tab) -----
